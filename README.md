@@ -31,16 +31,11 @@ O CI confere a cada push se `site/` está em dia com os dashboards — se
 esquecer de rodar o comando acima depois de mudar um dashboard, o badge
 fica vermelho avisando.
 
-### Publicar no Vercel (gratuito)
+### Publicado no Vercel
 
-1. Entre em [vercel.com](https://vercel.com) e faça login com sua conta do GitHub.
-2. **Add New... → Project** → selecione este repositório.
-3. Em **Root Directory**, escolha a pasta `site`.
-4. Framework Preset: **Other**. Build Command e Output Directory: deixe em branco/padrão (não tem build, é HTML puro).
-5. **Deploy**.
-
-Pronto — o link fica em algo como `https://<nome-do-projeto>.vercel.app` e
-atualiza sozinho a cada push na branch principal. Não precisa repetir esse
-passo pros próximos projetos: como `site/` já lista qualquer pasta nova
-automaticamente, um dashboard novo aparece no mesmo link assim que for
-commitado.
+Já conectado ao GitHub — todo push na `main` atualiza o link sozinho.
+Root Directory = `site`, sem build (HTML puro), proteção de acesso
+desligada (senão o link pediria login do Vercel pra abrir). Não precisa
+repetir nada disso pros próximos projetos: como `site/` já lista qualquer
+pasta nova automaticamente, um dashboard novo aparece no mesmo link assim
+que for commitado na `main`.
