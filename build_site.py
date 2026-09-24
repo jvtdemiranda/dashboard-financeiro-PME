@@ -1,15 +1,21 @@
 """
 Monta a pasta site/: uma cópia estática, pronta pra publicar (Vercel,
 Render, Netlify, GitHub Pages, qualquer host de arquivo estático), de
-todos os dashboards HTML do portfólio.
+cada projeto do portfólio.
 
-Convenção: qualquer pasta na raiz do repo que tenha um dashboard/*.html
-vira uma página em site/<pasta>/index.html, e entra automaticamente na
-página inicial (site/index.html) — um projeto novo não precisa de
-nenhuma mudança neste script, só rodar ele de novo depois de gerar o
-dashboard.
+Convenção — qualquer pasta na raiz do repo entra automaticamente,
+detectada de dois jeitos (um projeto novo não precisa de nenhuma mudança
+neste script, só rodar ele de novo depois de gerar/editar o projeto):
 
-Rodar depois de qualquer mudança num dashboard já gerado:
+- **Projeto de dado/dashboard**: tem `dashboard/*.html` (arquivo único,
+  gerado por script a partir de dados) -> copiado como
+  `site/<projeto>/index.html`.
+- **Projeto de site estático**: tem `index.html` na própria raiz da
+  pasta (referenciando `css/`, `js/`, etc.) -> a pasta inteira é copiada
+  pra `site/<projeto>/`, exceto README.md e docs/ (que são só pro
+  GitHub).
+
+Rodar depois de qualquer mudança num projeto já commitado:
     python build_site.py
 
 O CI (.github/workflows/pipeline.yml) roda isso e falha se o resultado
@@ -25,35 +31,44 @@ from pathlib import Path
 RAIZ = Path(__file__).parent
 SITE = RAIZ / "site"
 
-IGNORAR = {".git", ".github", "site", "docs", "node_modules"}
+IGNORAR = {".git", ".github", "site", "node_modules"}
+IGNORAR_NA_COPIA = shutil.ignore_patterns("README.md", "docs", ".*")
 
 
 def encontrar_projetos():
-    """Retorna, em ordem alfabética, cada pasta da raiz que tem dashboard/*.html."""
+    """Retorna, em ordem alfabética, cada projeto detectado e como publicá-lo.
+
+    Cada item é (nome_da_pasta, "arquivo" | "pasta", origem).
+    """
     projetos = []
     for item in sorted(RAIZ.iterdir()):
         if not item.is_dir() or item.name in IGNORAR or item.name.startswith("."):
             continue
+
         pasta_dashboard = item / "dashboard"
-        if not pasta_dashboard.is_dir():
-            continue
-        htmls = sorted(pasta_dashboard.glob("*.html"))
-        if htmls:
-            projetos.append((item.name, htmls[0]))
+        if pasta_dashboard.is_dir():
+            htmls = sorted(pasta_dashboard.glob("*.html"))
+            if htmls:
+                projetos.append((item.name, "arquivo", htmls[0]))
+                continue
+
+        if (item / "index.html").is_file():
+            projetos.append((item.name, "pasta", item))
+
     return projetos
 
 
-def montar_pagina_inicial(projetos: list[tuple[str, Path]]) -> str:
+def montar_pagina_inicial(projetos: list[tuple[str, str, Path]]) -> str:
     itens = "\n".join(
         f'    <a href="./{html.escape(nome)}/">{html.escape(nome)}</a>'
-        for nome, _ in projetos
+        for nome, _, _ in projetos
     )
     return f"""<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Portfólio de Dashboards</title>
+  <title>Portfólio</title>
   <style>
     :root{{color-scheme:light dark; --bg:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --border:#e1e0d9; --blue:#2a78d6;}}
     @media (prefers-color-scheme: dark){{
@@ -69,10 +84,10 @@ def montar_pagina_inicial(projetos: list[tuple[str, Path]]) -> str:
   </style>
 </head>
 <body>
-  <h1>Portfólio de Dashboards</h1>
-  <p class="sub">Cada link abre o dashboard completo, direto no navegador (funciona no celular).</p>
+  <h1>Portfólio</h1>
+  <p class="sub">Cada link abre o projeto completo, direto no navegador (funciona no celular).</p>
 {itens}
-  <footer>Gerado por build_site.py a partir dos dashboards de cada projeto.</footer>
+  <footer>Gerado por build_site.py a partir de cada projeto do repositório.</footer>
 </body>
 </html>
 """
@@ -85,16 +100,20 @@ def main():
 
     projetos = encontrar_projetos()
 
-    for nome, arquivo_html in projetos:
+    for nome, tipo, origem in projetos:
         pasta_destino = SITE / nome
-        pasta_destino.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(arquivo_html, pasta_destino / "index.html")
+        if tipo == "arquivo":
+            pasta_destino.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(origem, pasta_destino / "index.html")
+        else:
+            shutil.copytree(origem, pasta_destino, ignore=IGNORAR_NA_COPIA)
 
     (SITE / "index.html").write_text(montar_pagina_inicial(projetos), encoding="utf-8")
 
     print(f"site/ montado com {len(projetos)} projeto(s):")
-    for nome, arquivo_html in projetos:
-        print(f"  - {nome}  <-  {arquivo_html.relative_to(RAIZ)}")
+    for nome, tipo, origem in projetos:
+        origem_relativa = origem.relative_to(RAIZ)
+        print(f"  - {nome}  <-  {origem_relativa} ({tipo})")
 
 
 if __name__ == "__main__":
