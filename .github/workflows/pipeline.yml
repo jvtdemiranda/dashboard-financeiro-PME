@@ -1,0 +1,91 @@
+name: Pipeline
+
+# Dois checks independentes a cada push/PR:
+#
+# 1. "site/ está em dia": reconstrói só os dashboards (Excel/HTML) a partir
+#    do CSV já tratado que está commitado, monta site/ de novo com
+#    build_site.py, e falha se dermos diferente do que está commitado.
+#    Não toca em gerar_dados.py/tratar_dados.py de propósito: como as datas
+#    são uma janela rolante relativa a "hoje", regenerar a base do zero
+#    nunca bate byte a byte com o que foi commitado num dia diferente —
+#    isso deixaria esse check vermelho pra sempre a partir do dia seguinte.
+#
+# 2. "pipeline roda sem erro": smoke test de ponta a ponta (gerar dado sujo
+#    -> tratar -> montar dashboards) só pra garantir que nada quebrou; não
+#    compara nada, só confere que os scripts rodam sem lançar erro.
+#
+# Convenção esperada de cada projeto (pasta na raiz do repo): um
+# requirements.txt e uma pasta scripts/ com os passos do pipeline, na
+# ordem gerar_dados.py -> tratar_dados.py -> gerar_dashboard*.py. Um
+# projeto futuro que siga essa convenção entra automaticamente nos dois
+# checks, sem precisar editar este arquivo.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  site-atualizado:
+    name: site/ está em dia com os dashboards commitados
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Reconstruir dashboards a partir do CSV já commitado
+        run: |
+          set -e
+          shopt -s nullglob
+          for req in */requirements.txt; do
+            projeto="$(dirname "$req")"
+            pip install -r "$req"
+            (cd "$projeto/scripts" && for script in gerar_dashboard.py gerar_dashboard_html.py; do
+              [ -f "$script" ] && python "$script"
+            done)
+          done
+
+      - name: Reconstruir site/ e comparar
+        run: |
+          set -e
+          python build_site.py
+          if ! git diff --quiet -- site 'dashboard-financeiro-pme/dashboard/*.html'; then
+            echo "::error::site/ (ou um dashboard .html) está desatualizado. Rode os scripts gerar_dashboard*.py e depois 'python build_site.py' localmente e comite o resultado."
+            git diff --stat -- site 'dashboard-financeiro-pme/dashboard/*.html'
+            exit 1
+          fi
+
+  pipeline-completo:
+    name: Pipeline completo roda sem erro (smoke test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Rodar o pipeline de cada projeto do zero
+        run: |
+          set -e
+          shopt -s nullglob
+          for req in */requirements.txt; do
+            projeto="$(dirname "$req")"
+            echo "::group::$projeto"
+            pip install -r "$req"
+            cd "$projeto/scripts"
+            for script in gerar_dados.py tratar_dados.py gerar_dashboard.py gerar_dashboard_html.py; do
+              if [ -f "$script" ]; then
+                echo "-> python $script"
+                python "$script"
+              fi
+            done
+            cd - > /dev/null
+            echo "::endgroup::"
+          done
