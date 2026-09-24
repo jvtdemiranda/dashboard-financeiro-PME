@@ -1,201 +1,201 @@
 data,descricao,categoria,tipo,valor,status
-2026-07-16 10:26:58.028756,Entrada - Cliente B,Fornecedor,Entrada,173.8,Pago
-2026-05-08 10:26:58.028774,Entrada - Cliente A,Imposto,Entrada,3399.66,
+2026-07-16 18:57:33.292613,Entrada - Cliente B,Fornecedor,Entrada,173.8,Pago
+2026-05-08 18:57:33.292613,Entrada - Cliente A,Imposto,Entrada,3399.66,
 31/07/2026,Entrada - Cliente B,Imposto,Entrada,197.5,Atrasado
-2026-04-11 10:26:58.028785,Entrada - Fornecedor Z,Imposto,Entrada,2828.16,Pendente
-2026-07-15 10:26:58.028790,Entrada - Cliente A,Manutencao,Entrada,2273.58,Pago
-2026-08-16 10:26:58.028794,Saída - Cliente B,Manutenção,Saída,1734.24,Pendente
-2026-08-31 10:26:58.028799,Entrada - Cliente C,Manutenção,Entrada,509.09,Pendente
-2026-05-30 10:26:58.028802,Saída - Fornecedor Y,Aluguel,Saída,4045.28,Pendente
-2026-04-17 10:26:58.028805,Entrada - Fornecedor Y,Manutenção,Entrada,2782.6,Pendente
-2026-09-13 10:26:58.028809,Entrada - Fornecedor Z,Fornecedor,Entrada,3537.63,Pendente
+2026-04-11 18:57:33.292613,Entrada - Fornecedor Z,Imposto,Entrada,2828.16,Pendente
+2026-07-15 18:57:33.292613,Entrada - Cliente A,Manutencao,Entrada,2273.58,Pago
+2026-08-16 18:57:33.292613,Saída - Cliente B,Manutenção,Saída,1734.24,Pendente
+2026-08-31 18:57:33.292613,Entrada - Cliente C,Manutenção,Entrada,509.09,Pendente
+2026-05-30 18:57:33.292613,Saída - Fornecedor Y,Aluguel,Saída,4045.28,Pendente
+2026-04-17 18:57:33.292613,Entrada - Fornecedor Y,Manutenção,Entrada,2782.6,Pendente
+2026-09-13 18:57:33.292613,Entrada - Fornecedor Z,Fornecedor,Entrada,3537.63,Pendente
 30/08/2026,Entrada - Fornecedor X,Salário,Entrada,4283.82,Pendente
-2026-06-26 10:26:58.028835,Saída - Cliente B,marketing,Saída,855.14,
+2026-06-26 18:57:33.292613,Saída - Cliente B,marketing,Saída,855.14,
 12/08/2026,Entrada - Fornecedor Y,Marketing,Entrada,3065.2,Pago
 17/07/2026,Entrada - Fornecedor Z,Marketing,Entrada,2338.19,Atrasado
-2026-09-10 10:26:58.028847,Entrada - Cliente B,Manutenção,Entrada,3438.84,Pago
-2026-09-08 10:26:58.028850,Saída - Cliente B,Imposto,Saída,2035.77,Atrasado
-2026-05-20 10:26:58.028854,Saída - Fornecedor X,Marketing,Saída,1102.5,Pendente
-2026-07-23 10:26:58.028857,Entrada - Fornecedor Z,Imposto,Entrada,1361.16,Atrasado
-2026-06-07 10:26:58.028860,Saída - Fornecedor Y,venda de servico,Saída,3747.72,Pendente
-2026-08-20 10:26:58.028863,Entrada - Fornecedor Y,Venda de Serviço,Entrada,4986.76,Pago
-2026-08-16 10:26:58.028866,Entrada - Fornecedor Z,Fornecedor,Entrada,4312.46,Atrasado
-2026-06-18 10:26:58.028869,Saída - Fornecedor X,Imposto,Saída,-3002.22,Pendente
-2026-09-22 10:26:58.028872,Saída - Fornecedor Z,Marketing,Saída,4856.84,Pago
-2026-06-29 10:26:58.028876,Saída - Cliente A,Salário,Saída,3854.56,Pendente
-2026-07-19 10:26:58.028880,Entrada - Fornecedor Y,Manutenção,Entrada,2295.93,Pago
-2026-07-10 10:26:58.028884,Entrada - Fornecedor Z,Imposto,Entrada,4359.07,Atrasado
-2026-08-14 10:26:58.028887,Entrada - Fornecedor Y,Manutenção,Entrada,806.55,Atrasado
-2026-05-22 10:26:58.028890,Entrada - Cliente A,Aluguel,Entrada,3014.78,Pendente
-2026-07-25 10:26:58.028893,Saída - Fornecedor Y,Aluguel,Saída,1235.29,Pago
+2026-09-10 18:57:33.292613,Entrada - Cliente B,Manutenção,Entrada,3438.84,Pago
+2026-09-08 18:57:33.292613,Saída - Cliente B,Imposto,Saída,2035.77,Atrasado
+2026-05-20 18:57:33.292613,Saída - Fornecedor X,Marketing,Saída,1102.5,Pendente
+2026-07-23 18:57:33.292613,Entrada - Fornecedor Z,Imposto,Entrada,1361.16,Atrasado
+2026-06-07 18:57:33.292613,Saída - Fornecedor Y,venda de servico,Saída,3747.72,Pendente
+2026-08-20 18:57:33.292613,Entrada - Fornecedor Y,Venda de Serviço,Entrada,4986.76,Pago
+2026-08-16 18:57:33.292613,Entrada - Fornecedor Z,Fornecedor,Entrada,4312.46,Atrasado
+2026-06-18 18:57:33.292613,Saída - Fornecedor X,Imposto,Saída,-3002.22,Pendente
+2026-09-22 18:57:33.292613,Saída - Fornecedor Z,Marketing,Saída,4856.84,Pago
+2026-06-29 18:57:33.292613,Saída - Cliente A,Salário,Saída,3854.56,Pendente
+2026-07-19 18:57:33.292613,Entrada - Fornecedor Y,Manutenção,Entrada,2295.93,Pago
+2026-07-10 18:57:33.292613,Entrada - Fornecedor Z,Imposto,Entrada,4359.07,Atrasado
+2026-08-14 18:57:33.292613,Entrada - Fornecedor Y,Manutenção,Entrada,806.55,Atrasado
+2026-05-22 18:57:33.292613,Entrada - Cliente A,Aluguel,Entrada,3014.78,Pendente
+2026-07-25 18:57:33.292613,Saída - Fornecedor Y,Aluguel,Saída,1235.29,Pago
 11/05/2026,Saída - Cliente B,fornecedor ,Saída,4089.32,Atrasado
-2026-08-13 10:26:58.028900,Saída - Cliente C,Imposto,Saída,4736.9,Atrasado
-2026-05-09 10:26:58.028903,Saída - Fornecedor Z,Marketing,Saída,4823.6,Pago
-2026-04-06 10:26:58.028905,Saída - Fornecedor Z,Salário,Saída,2025.01,Pendente
-2026-07-29 10:26:58.028908,Saída - Cliente A,Salário,Saída,648.97,Pago
-2026-09-23 10:26:58.028911,Entrada - Cliente A,marketing,Entrada,2962.78,Atrasado
+2026-08-13 18:57:33.292613,Saída - Cliente C,Imposto,Saída,4736.9,Atrasado
+2026-05-09 18:57:33.292613,Saída - Fornecedor Z,Marketing,Saída,4823.6,Pago
+2026-04-06 18:57:33.292613,Saída - Fornecedor Z,Salário,Saída,2025.01,Pendente
+2026-07-29 18:57:33.292613,Saída - Cliente A,Salário,Saída,648.97,Pago
+2026-09-23 18:57:33.292613,Entrada - Cliente A,marketing,Entrada,2962.78,Atrasado
 16/09/2026,Entrada - Cliente C,Alugue,Entrada,1183.26,Atrasado
-2026-05-23 10:26:58.028917,Entrada - Cliente B,Imposto,Entrada,1428.46,Pago
-2026-05-26 10:26:58.028920,Saída - Fornecedor X,Fornecedor,Saída,1252.84,Pago
-2026-06-26 10:26:58.028922,Entrada - Fornecedor X,Venda de Serviço,Entrada,3311.96,Pendente
-2026-04-12 10:26:58.028925,Entrada - Cliente A,Aluguel,Entrada,3383.15,Pendente
-2026-08-28 10:26:58.028928,Saída - Cliente B,fornecedor ,Saída,4012.93,Pago
-2026-08-09 10:26:58.028931,Saída - Cliente C,Venda de Serviço,Saída,743.9,Pago
-2026-05-07 10:26:58.028934,Entrada - Cliente A,Aluguel,Entrada,2243.5,Atrasado
-2026-07-26 10:26:58.028939,Entrada - Cliente B,Venda de Serviço,Entrada,4846.53,Pendente
-2026-06-14 10:26:58.028942,Saída - Cliente A,Fornecedor,Saída,1108.05,Pendente
-2026-07-19 10:26:58.028944,Entrada - Fornecedor X,Salário,Entrada,4927.28,Pendente
-2026-07-11 10:26:58.028948,Saída - Cliente B,Aluguel,Saída,816.24,Atrasado
-2026-09-10 10:26:58.028951,Entrada - Cliente A,Imposto,Entrada,3752.48,Pendente
-2026-05-17 10:26:58.028954,Entrada - Cliente A,Manutenção,Entrada,331.55,Pago
-2026-04-05 10:26:58.028956,Entrada - Cliente B,Venda de Serviço,Entrada,2995.42,Pago
-2026-09-14 10:26:58.028959,Entrada - Fornecedor Y,Aluguel,Entrada,2915.65,Pendente
-2026-08-03 10:26:58.028962,Saída - Fornecedor Z,Marketing,Saída,4676.8,Pendente
-2026-08-22 10:26:58.028965,Entrada - Fornecedor Z,Marketing,Entrada,1364.79,Pendente
-2026-09-06 10:26:58.028968,Saída - Cliente A,Venda de Serviço,Saída,1615.08,Atrasado
+2026-05-23 18:57:33.292613,Entrada - Cliente B,Imposto,Entrada,1428.46,Pago
+2026-05-26 18:57:33.292613,Saída - Fornecedor X,Fornecedor,Saída,1252.84,Pago
+2026-06-26 18:57:33.292613,Entrada - Fornecedor X,Venda de Serviço,Entrada,3311.96,Pendente
+2026-04-12 18:57:33.292613,Entrada - Cliente A,Aluguel,Entrada,3383.15,Pendente
+2026-08-28 18:57:33.292613,Saída - Cliente B,fornecedor ,Saída,4012.93,Pago
+2026-08-09 18:57:33.292613,Saída - Cliente C,Venda de Serviço,Saída,743.9,Pago
+2026-05-07 18:57:33.292613,Entrada - Cliente A,Aluguel,Entrada,2243.5,Atrasado
+2026-07-26 18:57:33.292613,Entrada - Cliente B,Venda de Serviço,Entrada,4846.53,Pendente
+2026-06-14 18:57:33.292613,Saída - Cliente A,Fornecedor,Saída,1108.05,Pendente
+2026-07-19 18:57:33.292613,Entrada - Fornecedor X,Salário,Entrada,4927.28,Pendente
+2026-07-11 18:57:33.292613,Saída - Cliente B,Aluguel,Saída,816.24,Atrasado
+2026-09-10 18:57:33.292613,Entrada - Cliente A,Imposto,Entrada,3752.48,Pendente
+2026-05-17 18:57:33.292613,Entrada - Cliente A,Manutenção,Entrada,331.55,Pago
+2026-04-05 18:57:33.292613,Entrada - Cliente B,Venda de Serviço,Entrada,2995.42,Pago
+2026-09-14 18:57:33.292613,Entrada - Fornecedor Y,Aluguel,Entrada,2915.65,Pendente
+2026-08-03 18:57:33.292613,Saída - Fornecedor Z,Marketing,Saída,4676.8,Pendente
+2026-08-22 18:57:33.292613,Entrada - Fornecedor Z,Marketing,Entrada,1364.79,Pendente
+2026-09-06 18:57:33.292613,Saída - Cliente A,Venda de Serviço,Saída,1615.08,Atrasado
 01/08/2026,Entrada - Fornecedor Y,Salário,Entrada,412.64,Pago
-2026-07-24 10:26:58.028974,Saída - Cliente C,Salário,Saída,4410.28,Pago
-2026-03-28 10:26:58.028978,Saída - Cliente C,Imposto,Saída,4177.04,Atrasado
-2026-05-06 10:26:58.028982,Entrada - Cliente C,Marketing,Entrada,3355.92,Pago
-2026-08-28 10:26:58.028985,Entrada - Fornecedor Z,Imposto ,Entrada,1359.11,Pago
-2026-08-02 10:26:58.028988,Saída - Fornecedor Z,Salario,Saída,1444.69,Pago
-2026-07-22 10:26:58.028991,Saída - Cliente A,Aluguel,Saída,2551.77,Atrasado
-2026-09-13 10:26:58.028995,Saída - Cliente A,Salário,Saída,4155.27,Pago
-2026-06-03 10:26:58.028998,Saída - Fornecedor Y,Marketing,Saída,849.83,Pendente
-2026-04-01 10:26:58.029003,Entrada - Cliente B,Imposto,Entrada,603.78,Pago
-2026-08-18 10:26:58.029006,Saída - Fornecedor X,Fornecedor,Saída,2933.42,Pago
-2026-09-14 10:26:58.029010,Saída - Cliente C,Fornecedor,Saída,1855.03,Atrasado
-2026-06-26 10:26:58.029014,Entrada - Fornecedor Y,Manutenção,Entrada,3351.32,Pendente
-2026-07-26 10:26:58.029017,Entrada - Cliente B,Manutenção,Entrada,4632.53,Pago
-2026-07-01 10:26:58.029020,Saída - Fornecedor X,Manutenção,Saída,172.69,Atrasado
-2026-03-29 10:26:58.029025,Entrada - Cliente A,Venda de Serviço,Entrada,1370.69,Pago
-2026-05-30 10:26:58.029028,Saída - Cliente C,Salário,Saída,1151.05,Pago
-2026-08-06 10:26:58.029031,Entrada - Fornecedor X,Salário,Entrada,167.14,Pendente
-2026-07-15 10:26:58.029034,Entrada - Cliente C,Marketing,Entrada,4836.1,Atrasado
-2026-05-10 10:26:58.029037,Saída - Cliente C,Aluguel,Saída,3413.61,Pago
-2026-07-19 10:26:58.029040,Saída - Cliente A,Aluguel,Saída,933.91,Atrasado
-2026-07-06 10:26:58.029043,Saída - Fornecedor X,Imposto,Saída,1761.15,Atrasado
-2026-04-30 10:26:58.029046,Entrada - Cliente B,Salário,Entrada,1956.72,Pago
-2026-05-10 10:26:58.029049,Saída - Fornecedor Z,Marketing,Saída,58.37,Atrasado
-2026-09-07 10:26:58.029052,Entrada - Fornecedor Z,Salário,Entrada,1852.9,Atrasado
-2026-08-24 10:26:58.029055,Saída - Fornecedor Z,Salário,Saída,3333.77,Atrasado
-2026-07-03 10:26:58.029058,Saída - Fornecedor X,Marketing,Saída,3351.12,Pendente
-2026-04-07 10:26:58.029061,Entrada - Fornecedor X,Marketing,Entrada,999.61,Atrasado
-2026-07-09 10:26:58.029066,Entrada - Fornecedor X,Imposto,Entrada,3096.8,Pago
-2026-06-06 10:26:58.029069,Saída - Fornecedor Y,Imposto,Saída,1470.22,Atrasado
-2026-06-03 10:26:58.029071,Saída - Fornecedor Z,Fornecedor,Saída,2351.69,Atrasado
+2026-07-24 18:57:33.292613,Saída - Cliente C,Salário,Saída,4410.28,Pago
+2026-03-28 18:57:33.292613,Saída - Cliente C,Imposto,Saída,4177.04,Atrasado
+2026-05-06 18:57:33.292613,Entrada - Cliente C,Marketing,Entrada,3355.92,Pago
+2026-08-28 18:57:33.292613,Entrada - Fornecedor Z,Imposto ,Entrada,1359.11,Pago
+2026-08-02 18:57:33.292613,Saída - Fornecedor Z,Salario,Saída,1444.69,Pago
+2026-07-22 18:57:33.292613,Saída - Cliente A,Aluguel,Saída,2551.77,Atrasado
+2026-09-13 18:57:33.292613,Saída - Cliente A,Salário,Saída,4155.27,Pago
+2026-06-03 18:57:33.292613,Saída - Fornecedor Y,Marketing,Saída,849.83,Pendente
+2026-04-01 18:57:33.292613,Entrada - Cliente B,Imposto,Entrada,603.78,Pago
+2026-08-18 18:57:33.292613,Saída - Fornecedor X,Fornecedor,Saída,2933.42,Pago
+2026-09-14 18:57:33.292613,Saída - Cliente C,Fornecedor,Saída,1855.03,Atrasado
+2026-06-26 18:57:33.292613,Entrada - Fornecedor Y,Manutenção,Entrada,3351.32,Pendente
+2026-07-26 18:57:33.292613,Entrada - Cliente B,Manutenção,Entrada,4632.53,Pago
+2026-07-01 18:57:33.292613,Saída - Fornecedor X,Manutenção,Saída,172.69,Atrasado
+2026-03-29 18:57:33.292613,Entrada - Cliente A,Venda de Serviço,Entrada,1370.69,Pago
+2026-05-30 18:57:33.292613,Saída - Cliente C,Salário,Saída,1151.05,Pago
+2026-08-06 18:57:33.292613,Entrada - Fornecedor X,Salário,Entrada,167.14,Pendente
+2026-07-15 18:57:33.292613,Entrada - Cliente C,Marketing,Entrada,4836.1,Atrasado
+2026-05-10 18:57:33.292613,Saída - Cliente C,Aluguel,Saída,3413.61,Pago
+2026-07-19 18:57:33.292613,Saída - Cliente A,Aluguel,Saída,933.91,Atrasado
+2026-07-06 18:57:33.292613,Saída - Fornecedor X,Imposto,Saída,1761.15,Atrasado
+2026-04-30 18:57:33.292613,Entrada - Cliente B,Salário,Entrada,1956.72,Pago
+2026-05-10 18:57:33.292613,Saída - Fornecedor Z,Marketing,Saída,58.37,Atrasado
+2026-09-07 18:57:33.292613,Entrada - Fornecedor Z,Salário,Entrada,1852.9,Atrasado
+2026-08-24 18:57:33.292613,Saída - Fornecedor Z,Salário,Saída,3333.77,Atrasado
+2026-07-03 18:57:33.292613,Saída - Fornecedor X,Marketing,Saída,3351.12,Pendente
+2026-04-07 18:57:33.292613,Entrada - Fornecedor X,Marketing,Entrada,999.61,Atrasado
+2026-07-09 18:57:33.292613,Entrada - Fornecedor X,Imposto,Entrada,3096.8,Pago
+2026-06-06 18:57:33.292613,Saída - Fornecedor Y,Imposto,Saída,1470.22,Atrasado
+2026-06-03 18:57:33.292613,Saída - Fornecedor Z,Fornecedor,Saída,2351.69,Atrasado
 12/08/2026,Saída - Fornecedor Z,Aluguel,Saída,3978.99,Pendente
-2026-07-26 10:26:58.029077,Saída - Fornecedor Z,Salário,Saída,512.27,Pago
-2026-09-13 10:26:58.029080,Entrada - Cliente B,Venda de Serviço,Entrada,779.4,Atrasado
-2026-04-16 10:26:58.029083,Entrada - Fornecedor Y,Fornecedor,Entrada,2304.31,Atrasado
-2026-07-24 10:26:58.029086,Saída - Cliente B,marketing,Saída,2497.17,Atrasado
-2026-08-28 10:26:58.029089,Entrada - Fornecedor X,Fornecedor,Entrada,4468.67,
-2026-07-23 10:26:58.029092,Saída - Cliente A,Venda de Serviço,Saída,298.58,Pago
+2026-07-26 18:57:33.292613,Saída - Fornecedor Z,Salário,Saída,512.27,Pago
+2026-09-13 18:57:33.292613,Entrada - Cliente B,Venda de Serviço,Entrada,779.4,Atrasado
+2026-04-16 18:57:33.292613,Entrada - Fornecedor Y,Fornecedor,Entrada,2304.31,Atrasado
+2026-07-24 18:57:33.292613,Saída - Cliente B,marketing,Saída,2497.17,Atrasado
+2026-08-28 18:57:33.292613,Entrada - Fornecedor X,Fornecedor,Entrada,4468.67,
+2026-07-23 18:57:33.292613,Saída - Cliente A,Venda de Serviço,Saída,298.58,Pago
 04/05/2026,Saída - Fornecedor Y,Salário,Saída,3354.51,Pendente
-2026-05-07 10:26:58.029098,Saída - Fornecedor X,Fornecedor,Saída,4161.32,Atrasado
-2026-07-23 10:26:58.029101,Saída - Fornecedor Z,Salário,Saída,2277.85,Atrasado
-2026-07-16 10:26:58.029104,Saída - Fornecedor X,Alugue,Saída,3152.4,Atrasado
-2026-07-01 10:26:58.029107,Saída - Cliente C,Imposto,Saída,1210.74,Pago
-2026-06-18 10:26:58.029109,Entrada - Fornecedor Z,Fornecedor,Entrada,796.61,Atrasado
-2026-06-12 10:26:58.029112,Entrada - Cliente C,Imposto,Entrada,367.93,Pendente
-2026-06-09 10:26:58.029115,Saída - Fornecedor X,Manutenção,Saída,358.22,
-2026-04-30 10:26:58.029118,Entrada - Fornecedor X,Venda de Serviço,Entrada,4290.82,Pago
-2026-06-17 10:26:58.029121,Saída - Fornecedor X,Imposto,Saída,1528.13,Atrasado
-2026-07-17 10:26:58.029127,Entrada - Fornecedor X,venda de servico,Entrada,2466.74,Pago
-2026-04-04 10:26:58.029130,Saída - Fornecedor X,Marketing,Saída,1713.84,Pago
-2026-04-18 10:26:58.029133,Saída - Fornecedor Y,Aluguel,Saída,4601.73,Pendente
-2026-06-07 10:26:58.029136,Entrada - Cliente B,Manutenção,Entrada,465.54,Pendente
-2026-06-19 10:26:58.029139,Entrada - Cliente C,Fornecedor,Entrada,298.91,Pendente
-2026-06-19 10:26:58.029142,Saída - Cliente C,Manutenção,Saída,1720.63,Pendente
-2026-05-27 10:26:58.029145,Saída - Cliente A,Marketing,Saída,4182.81,Atrasado
-2026-06-27 10:26:58.029148,Entrada - Cliente B,Marketing,Entrada,4999.54,Pago
-2026-07-23 10:26:58.029151,Entrada - Cliente B,Manutencao,Entrada,3783.45,Pago
-2026-05-26 10:26:58.029154,Entrada - Fornecedor Z,Aluguel,Entrada,1230.8,
+2026-05-07 18:57:33.292613,Saída - Fornecedor X,Fornecedor,Saída,4161.32,Atrasado
+2026-07-23 18:57:33.292613,Saída - Fornecedor Z,Salário,Saída,2277.85,Atrasado
+2026-07-16 18:57:33.292613,Saída - Fornecedor X,Alugue,Saída,3152.4,Atrasado
+2026-07-01 18:57:33.292613,Saída - Cliente C,Imposto,Saída,1210.74,Pago
+2026-06-18 18:57:33.292613,Entrada - Fornecedor Z,Fornecedor,Entrada,796.61,Atrasado
+2026-06-12 18:57:33.292613,Entrada - Cliente C,Imposto,Entrada,367.93,Pendente
+2026-06-09 18:57:33.292613,Saída - Fornecedor X,Manutenção,Saída,358.22,
+2026-04-30 18:57:33.292613,Entrada - Fornecedor X,Venda de Serviço,Entrada,4290.82,Pago
+2026-06-17 18:57:33.292613,Saída - Fornecedor X,Imposto,Saída,1528.13,Atrasado
+2026-07-17 18:57:33.292613,Entrada - Fornecedor X,venda de servico,Entrada,2466.74,Pago
+2026-04-04 18:57:33.292613,Saída - Fornecedor X,Marketing,Saída,1713.84,Pago
+2026-04-18 18:57:33.292613,Saída - Fornecedor Y,Aluguel,Saída,4601.73,Pendente
+2026-06-07 18:57:33.292613,Entrada - Cliente B,Manutenção,Entrada,465.54,Pendente
+2026-06-19 18:57:33.292613,Entrada - Cliente C,Fornecedor,Entrada,298.91,Pendente
+2026-06-19 18:57:33.292613,Saída - Cliente C,Manutenção,Saída,1720.63,Pendente
+2026-05-27 18:57:33.292613,Saída - Cliente A,Marketing,Saída,4182.81,Atrasado
+2026-06-27 18:57:33.292613,Entrada - Cliente B,Marketing,Entrada,4999.54,Pago
+2026-07-23 18:57:33.292613,Entrada - Cliente B,Manutencao,Entrada,3783.45,Pago
+2026-05-26 18:57:33.292613,Entrada - Fornecedor Z,Aluguel,Entrada,1230.8,
 21/07/2026,Entrada - Cliente C,Fornecedor,Entrada,2351.92,Atrasado
-2026-08-14 10:26:58.029159,Entrada - Cliente C,Aluguel,Entrada,3900.07,Atrasado
-2026-04-30 10:26:58.029162,Entrada - Fornecedor Z,Venda de Serviço,Entrada,4647.99,Pendente
+2026-08-14 18:57:33.292613,Entrada - Cliente C,Aluguel,Entrada,3900.07,Atrasado
+2026-04-30 18:57:33.292613,Entrada - Fornecedor Z,Venda de Serviço,Entrada,4647.99,Pendente
 01/04/2026,Entrada - Fornecedor Z,Fornecedor,Entrada,426.18,Pago
-2026-04-24 10:26:58.029168,Saída - Cliente A,Manutenção,Saída,4258.95,Atrasado
-2026-06-07 10:26:58.029171,Entrada - Fornecedor Z,Salário,Entrada,1768.66,Pago
-2026-06-09 10:26:58.029174,Saída - Fornecedor X,Alugue,Saída,112.63,Pendente
-2026-05-30 10:26:58.029184,Saída - Fornecedor Z,Fornecedor,Saída,3196.15,Pendente
-2026-04-11 10:26:58.029187,Entrada - Cliente C,Imposto,Entrada,3682.29,Atrasado
-2026-04-26 10:26:58.029192,Saída - Cliente C,Salário,Saída,2351.13,Pago
-2026-06-01 10:26:58.029195,Entrada - Cliente B,Manutenção,Entrada,1430.69,Pendente
-2026-05-21 10:26:58.029198,Saída - Cliente C,Fornecedor,Saída,1715.16,Pendente
-2026-07-20 10:26:58.029201,Entrada - Cliente C,Salário,Entrada,1806.38,Atrasado
-2026-05-15 10:26:58.029204,Saída - Cliente B,Aluguel,Saída,2801.17,Pago
+2026-04-24 18:57:33.292613,Saída - Cliente A,Manutenção,Saída,4258.95,Atrasado
+2026-06-07 18:57:33.292613,Entrada - Fornecedor Z,Salário,Entrada,1768.66,Pago
+2026-06-09 18:57:33.292613,Saída - Fornecedor X,Alugue,Saída,112.63,Pendente
+2026-05-30 18:57:33.292613,Saída - Fornecedor Z,Fornecedor,Saída,3196.15,Pendente
+2026-04-11 18:57:33.292613,Entrada - Cliente C,Imposto,Entrada,3682.29,Atrasado
+2026-04-26 18:57:33.292613,Saída - Cliente C,Salário,Saída,2351.13,Pago
+2026-06-01 18:57:33.292613,Entrada - Cliente B,Manutenção,Entrada,1430.69,Pendente
+2026-05-21 18:57:33.292613,Saída - Cliente C,Fornecedor,Saída,1715.16,Pendente
+2026-07-20 18:57:33.292613,Entrada - Cliente C,Salário,Entrada,1806.38,Atrasado
+2026-05-15 18:57:33.292613,Saída - Cliente B,Aluguel,Saída,2801.17,Pago
 25/07/2026,Saída - Fornecedor Z,Venda de Serviço,Saída,2468.46,Atrasado
-2026-09-20 10:26:58.029210,Saída - Cliente A,Salário,Saída,2268.46,Pago
-2026-07-08 10:26:58.029213,Saída - Fornecedor Z,Imposto,Saída,3474.35,
-2026-06-28 10:26:58.029216,Saída - Fornecedor X,Marketing,Saída,-2789.69,Atrasado
-2026-05-31 10:26:58.029219,Saída - Cliente C,Salário,Saída,1791.46,Pendente
-2026-08-06 10:26:58.029222,Entrada - Cliente C,Aluguel,Entrada,647.25,Atrasado
-2026-05-24 10:26:58.029225,Entrada - Cliente C,Marketing,Entrada,998.13,Atrasado
-2026-08-06 10:26:58.029228,Saída - Cliente C,Fornecedor,Saída,4903.53,Pendente
-2026-05-11 10:26:58.029231,Entrada - Cliente B,Salário,Entrada,1546.22,Pago
-2026-03-30 10:26:58.029233,Entrada - Cliente B,Marketing,Entrada,2789.13,Pendente
-2026-05-01 10:26:58.029236,Entrada - Cliente C,venda de servico,Entrada,4369.96,Pendente
-2026-09-11 10:26:58.029239,Saída - Cliente C,Manutenção,Saída,-1736.49,Pendente
-2026-06-14 10:26:58.029242,Entrada - Fornecedor X,Aluguel,Entrada,4119.47,Atrasado
-2026-05-03 10:26:58.029245,Entrada - Cliente C,Aluguel,Entrada,801.05,Pago
-2026-06-10 10:26:58.029248,Entrada - Fornecedor Y,Imposto,Entrada,2812.46,Atrasado
-2026-06-19 10:26:58.029252,Entrada - Fornecedor X,Venda de Serviço,Entrada,3889.68,Pendente
-2026-04-19 10:26:58.029256,Saída - Cliente A,Imposto,Saída,1561.63,Atrasado
-2026-08-02 10:26:58.029259,Entrada - Fornecedor Z,Fornecedor,Entrada,4740.57,Pendente
-2026-08-11 10:26:58.029262,Entrada - Fornecedor Y,Aluguel,Entrada,827.43,Pago
-2026-04-01 10:26:58.029264,Entrada - Fornecedor Y,Venda de Serviço,Entrada,2072.16,Pendente
-2026-03-28 10:26:58.029269,Entrada - Cliente C,Marketing,Entrada,1195.81,Pendente
-2026-07-19 10:26:58.029272,Entrada - Fornecedor Z,Imposto,Entrada,3452.56,Atrasado
-2026-05-08 10:26:58.029275,Entrada - Cliente B,Marketing,Entrada,2154.44,Pago
-2026-09-06 10:26:58.029278,Saída - Cliente A,Fornecedor,Saída,4141.82,Pendente
-2026-05-28 10:26:58.029281,Saída - Fornecedor Z,Salário,Saída,2223.81,Atrasado
-2026-05-19 10:26:58.029283,Saída - Fornecedor Y,Venda de Serviço,Saída,4716.25,Pendente
-2026-06-06 10:26:58.029286,Entrada - Fornecedor Z,Salário,Entrada,3010.28,Atrasado
-2026-07-28 10:26:58.029289,Saída - Fornecedor Z,Manutenção,Saída,178.03,Atrasado
-2026-04-05 10:26:58.029292,Entrada - Cliente C,Imposto,Entrada,4997.88,Pago
-2026-04-11 10:26:58.029295,Entrada - Fornecedor X,Salário,Entrada,2378.98,Pago
-2026-05-22 10:26:58.029298,Saída - Cliente A,Venda de Serviço,Saída,3192.18,Pendente
-2026-04-06 10:26:58.029301,Saída - Cliente A,Manutenção,Saída,1699.88,Pago
-2026-05-21 10:26:58.029303,Saída - Cliente C,Marketing,Saída,2087.64,Pendente
-2026-07-06 10:26:58.029306,Entrada - Cliente C,Salario,Entrada,2301.39,Pago
-2026-09-24 10:26:58.029312,Saída - Fornecedor Z,Manutenção,Saída,4331.31,Atrasado
-2026-08-07 10:26:58.029315,Saída - Fornecedor Y,Salário,Saída,2095.58,Atrasado
-2026-09-11 10:26:58.029318,Saída - Cliente B,Salário,Saída,3145.77,Atrasado
-2026-06-04 10:26:58.029321,Entrada - Fornecedor Z,Venda de Serviço,Entrada,4641.98,Pago
-2026-04-22 10:26:58.029324,Entrada - Cliente B,Marketing,Entrada,4867.08,Pago
-2026-05-06 10:26:58.029327,Saída - Fornecedor X,Aluguel,Saída,2776.65,Pago
-2026-08-25 10:26:58.029330,Entrada - Fornecedor Z,Manutenção,Entrada,2334.17,Pago
-2026-07-12 10:26:58.029333,Saída - Fornecedor Y,Marketing,Saída,4666.63,Pendente
-2026-05-27 10:26:58.029337,Saída - Cliente B,venda de servico,Saída,4181.88,Atrasado
-2026-04-24 10:26:58.029341,Entrada - Fornecedor Y,Marketing,Entrada,1948.75,Pago
-2026-06-10 10:26:58.029344,Entrada - Cliente C,Manutenção,Entrada,1417.42,Atrasado
-2026-07-14 10:26:58.029347,Saída - Fornecedor Z,Salario,Saída,4111.72,Atrasado
-2026-06-02 10:26:58.029350,Saída - Fornecedor Y,Venda de Serviço,Saída,4333.04,Pendente
-2026-05-08 10:26:58.029352,Saída - Fornecedor X,Venda de Serviço,Saída,2781.99,Pendente
+2026-09-20 18:57:33.292613,Saída - Cliente A,Salário,Saída,2268.46,Pago
+2026-07-08 18:57:33.292613,Saída - Fornecedor Z,Imposto,Saída,3474.35,
+2026-06-28 18:57:33.292613,Saída - Fornecedor X,Marketing,Saída,-2789.69,Atrasado
+2026-05-31 18:57:33.292613,Saída - Cliente C,Salário,Saída,1791.46,Pendente
+2026-08-06 18:57:33.292613,Entrada - Cliente C,Aluguel,Entrada,647.25,Atrasado
+2026-05-24 18:57:33.292613,Entrada - Cliente C,Marketing,Entrada,998.13,Atrasado
+2026-08-06 18:57:33.292613,Saída - Cliente C,Fornecedor,Saída,4903.53,Pendente
+2026-05-11 18:57:33.292613,Entrada - Cliente B,Salário,Entrada,1546.22,Pago
+2026-03-30 18:57:33.292613,Entrada - Cliente B,Marketing,Entrada,2789.13,Pendente
+2026-05-01 18:57:33.292613,Entrada - Cliente C,venda de servico,Entrada,4369.96,Pendente
+2026-09-11 18:57:33.292613,Saída - Cliente C,Manutenção,Saída,-1736.49,Pendente
+2026-06-14 18:57:33.292613,Entrada - Fornecedor X,Aluguel,Entrada,4119.47,Atrasado
+2026-05-03 18:57:33.292613,Entrada - Cliente C,Aluguel,Entrada,801.05,Pago
+2026-06-10 18:57:33.292613,Entrada - Fornecedor Y,Imposto,Entrada,2812.46,Atrasado
+2026-06-19 18:57:33.292613,Entrada - Fornecedor X,Venda de Serviço,Entrada,3889.68,Pendente
+2026-04-19 18:57:33.292613,Saída - Cliente A,Imposto,Saída,1561.63,Atrasado
+2026-08-02 18:57:33.292613,Entrada - Fornecedor Z,Fornecedor,Entrada,4740.57,Pendente
+2026-08-11 18:57:33.292613,Entrada - Fornecedor Y,Aluguel,Entrada,827.43,Pago
+2026-04-01 18:57:33.292613,Entrada - Fornecedor Y,Venda de Serviço,Entrada,2072.16,Pendente
+2026-03-28 18:57:33.292613,Entrada - Cliente C,Marketing,Entrada,1195.81,Pendente
+2026-07-19 18:57:33.292613,Entrada - Fornecedor Z,Imposto,Entrada,3452.56,Atrasado
+2026-05-08 18:57:33.292613,Entrada - Cliente B,Marketing,Entrada,2154.44,Pago
+2026-09-06 18:57:33.292613,Saída - Cliente A,Fornecedor,Saída,4141.82,Pendente
+2026-05-28 18:57:33.292613,Saída - Fornecedor Z,Salário,Saída,2223.81,Atrasado
+2026-05-19 18:57:33.292613,Saída - Fornecedor Y,Venda de Serviço,Saída,4716.25,Pendente
+2026-06-06 18:57:33.292613,Entrada - Fornecedor Z,Salário,Entrada,3010.28,Atrasado
+2026-07-28 18:57:33.292613,Saída - Fornecedor Z,Manutenção,Saída,178.03,Atrasado
+2026-04-05 18:57:33.292613,Entrada - Cliente C,Imposto,Entrada,4997.88,Pago
+2026-04-11 18:57:33.292613,Entrada - Fornecedor X,Salário,Entrada,2378.98,Pago
+2026-05-22 18:57:33.292613,Saída - Cliente A,Venda de Serviço,Saída,3192.18,Pendente
+2026-04-06 18:57:33.292613,Saída - Cliente A,Manutenção,Saída,1699.88,Pago
+2026-05-21 18:57:33.292613,Saída - Cliente C,Marketing,Saída,2087.64,Pendente
+2026-07-06 18:57:33.292613,Entrada - Cliente C,Salario,Entrada,2301.39,Pago
+2026-09-24 18:57:33.292613,Saída - Fornecedor Z,Manutenção,Saída,4331.31,Atrasado
+2026-08-07 18:57:33.292613,Saída - Fornecedor Y,Salário,Saída,2095.58,Atrasado
+2026-09-11 18:57:33.292613,Saída - Cliente B,Salário,Saída,3145.77,Atrasado
+2026-06-04 18:57:33.292613,Entrada - Fornecedor Z,Venda de Serviço,Entrada,4641.98,Pago
+2026-04-22 18:57:33.292613,Entrada - Cliente B,Marketing,Entrada,4867.08,Pago
+2026-05-06 18:57:33.292613,Saída - Fornecedor X,Aluguel,Saída,2776.65,Pago
+2026-08-25 18:57:33.292613,Entrada - Fornecedor Z,Manutenção,Entrada,2334.17,Pago
+2026-07-12 18:57:33.292613,Saída - Fornecedor Y,Marketing,Saída,4666.63,Pendente
+2026-05-27 18:57:33.292613,Saída - Cliente B,venda de servico,Saída,4181.88,Atrasado
+2026-04-24 18:57:33.292613,Entrada - Fornecedor Y,Marketing,Entrada,1948.75,Pago
+2026-06-10 18:57:33.292613,Entrada - Cliente C,Manutenção,Entrada,1417.42,Atrasado
+2026-07-14 18:57:33.292613,Saída - Fornecedor Z,Salario,Saída,4111.72,Atrasado
+2026-06-02 18:57:33.292613,Saída - Fornecedor Y,Venda de Serviço,Saída,4333.04,Pendente
+2026-05-08 18:57:33.292613,Saída - Fornecedor X,Venda de Serviço,Saída,2781.99,Pendente
 25/07/2026,Entrada - Fornecedor Y,Venda de Serviço,Entrada,4904.83,Pago
-2026-05-26 10:26:58.029358,Saída - Fornecedor Z,Manutenção,Saída,266.05,
-2026-04-11 10:26:58.029361,Saída - Cliente B,Venda de Serviço,Saída,4942.65,Pago
-2026-04-26 10:26:58.029364,Entrada - Cliente C,Manutenção,Entrada,2536.34,
-2026-05-31 10:26:58.029366,Saída - Cliente A,Marketing,Saída,543.57,Pago
-2026-08-16 10:26:58.029369,Saída - Cliente A,Venda de Serviço,Saída,4361.12,Pendente
-2026-06-15 10:26:58.029374,Saída - Fornecedor Z,Aluguel,Saída,3135.13,Pendente
-2026-04-17 10:26:58.029377,Saída - Fornecedor Z,Manutenção,Saída,4772.99,Pendente
+2026-05-26 18:57:33.292613,Saída - Fornecedor Z,Manutenção,Saída,266.05,
+2026-04-11 18:57:33.292613,Saída - Cliente B,Venda de Serviço,Saída,4942.65,Pago
+2026-04-26 18:57:33.292613,Entrada - Cliente C,Manutenção,Entrada,2536.34,
+2026-05-31 18:57:33.292613,Saída - Cliente A,Marketing,Saída,543.57,Pago
+2026-08-16 18:57:33.292613,Saída - Cliente A,Venda de Serviço,Saída,4361.12,Pendente
+2026-06-15 18:57:33.292613,Saída - Fornecedor Z,Aluguel,Saída,3135.13,Pendente
+2026-04-17 18:57:33.292613,Saída - Fornecedor Z,Manutenção,Saída,4772.99,Pendente
 26/07/2026,Entrada - Fornecedor Z,Marketing,Entrada,3106.42,Pendente
-2026-06-05 10:26:58.029383,Entrada - Cliente A,Manutenção,Entrada,3746.49,Atrasado
-2026-03-31 10:26:58.029386,Entrada - Cliente C,Alugue,Entrada,2246.21,Pago
-2026-07-11 10:26:58.029388,Saída - Cliente C,Salário,Saída,3990.91,Pendente
-2026-06-11 10:26:58.029393,Entrada - Fornecedor Y,Marketing,Entrada,1258.78,Pago
-2026-04-21 10:26:58.029395,Entrada - Fornecedor X,Imposto,Entrada,916.59,Atrasado
-2026-04-28 10:26:58.029398,Entrada - Cliente B,Fornecedor,Entrada,2513.45,Pendente
-2026-04-07 10:26:58.029401,Saída - Cliente A,Manutenção,Saída,2324.87,Pendente
-2026-08-15 10:26:58.029404,Saída - Cliente A,Venda de Serviço,Saída,-3404.17,Pendente
-2026-06-08 10:26:58.029406,Saída - Fornecedor Z,Salário,Saída,3212.75,Pendente
-2026-06-18 10:26:58.029409,Saída - Fornecedor X,Aluguel,Saída,1036.12,Pago
+2026-06-05 18:57:33.292613,Entrada - Cliente A,Manutenção,Entrada,3746.49,Atrasado
+2026-03-31 18:57:33.292613,Entrada - Cliente C,Alugue,Entrada,2246.21,Pago
+2026-07-11 18:57:33.292613,Saída - Cliente C,Salário,Saída,3990.91,Pendente
+2026-06-11 18:57:33.292613,Entrada - Fornecedor Y,Marketing,Entrada,1258.78,Pago
+2026-04-21 18:57:33.292613,Entrada - Fornecedor X,Imposto,Entrada,916.59,Atrasado
+2026-04-28 18:57:33.292613,Entrada - Cliente B,Fornecedor,Entrada,2513.45,Pendente
+2026-04-07 18:57:33.292613,Saída - Cliente A,Manutenção,Saída,2324.87,Pendente
+2026-08-15 18:57:33.292613,Saída - Cliente A,Venda de Serviço,Saída,-3404.17,Pendente
+2026-06-08 18:57:33.292613,Saída - Fornecedor Z,Salário,Saída,3212.75,Pendente
+2026-06-18 18:57:33.292613,Saída - Fornecedor X,Aluguel,Saída,1036.12,Pago
 30/04/2026,Saída - Cliente C,Marketing,Saída,-2881.02,Pendente
-2026-04-09 10:26:58.029415,Entrada - Fornecedor X,Salário,Entrada,4890.83,Pago
-2026-05-20 10:26:58.029418,Entrada - Cliente C,Manutenção,Entrada,4557.55,Pago
-2026-08-07 10:26:58.029421,Saída - Fornecedor Y,Salário,Saída,1134.07,Atrasado
-2026-04-17 10:26:58.029430,Entrada - Fornecedor Z,Aluguel,Entrada,3159.83,Pendente
-2026-06-23 10:26:58.029434,Saída - Fornecedor Z,fornecedor ,Saída,215.15,Pago
+2026-04-09 18:57:33.292613,Entrada - Fornecedor X,Salário,Entrada,4890.83,Pago
+2026-05-20 18:57:33.292613,Entrada - Cliente C,Manutenção,Entrada,4557.55,Pago
+2026-08-07 18:57:33.292613,Saída - Fornecedor Y,Salário,Saída,1134.07,Atrasado
+2026-04-17 18:57:33.292613,Entrada - Fornecedor Z,Aluguel,Entrada,3159.83,Pendente
+2026-06-23 18:57:33.292613,Saída - Fornecedor Z,fornecedor ,Saída,215.15,Pago
 10/06/2026,Saída - Cliente B,Fornecedor,Saída,1667.26,Pago

@@ -5,6 +5,12 @@ para um pequeno negócio — receber um export "cru" de um sistema financeiro,
 identificar e tratar inconsistências, e transformar isso em um dashboard
 gerencial (fluxo de caixa, contas a pagar/receber, DRE simplificado).
 
+<p align="center">
+  <img src="docs/screenshot-resumo.png" width="31%" alt="Aba Resumo do dashboard, com KPIs e gráfico de fluxo de caixa mensal">
+  <img src="docs/screenshot-contas.png" width="31%" alt="Aba Contas a Pagar e Receber, com lista de contas em aberto por status">
+  <img src="docs/screenshot-dre.png" width="31%" alt="Aba DRE simplificado, com receita, despesas por categoria e resultado líquido">
+</p>
+
 ## Por que esse projeto
 
 A maioria dos portfólios mostra só o resultado bonito (o dashboard pronto).
@@ -18,6 +24,7 @@ que ele realmente chega de um sistema real.
 dashboard-financeiro-pme/
 ├── README.md
 ├── requirements.txt
+├── docs/               -> screenshots usados neste README
 ├── data/
 │   ├── raw/           -> transacoes_brutas.csv (dado "sujo", simulando export de sistema)
 │   └── processed/     -> transacoes_tratadas.csv (dado limpo, pronto para o dashboard)
@@ -45,14 +52,6 @@ seguintes problemas propositais (comuns em exports reais de sistemas):
 | Datas em formato texto (dd/mm/aaaa) misturado com timestamp | ~8%       |
 | Sinal de valor invertido em transações de saída  | ~5%                    |
 | Status de pagamento em branco                    | ~4%                    |
-
-> **Nota:** a base incluída neste repositório (gerada em uma execução anterior)
-> acabou cobrindo jan/2026–dez/2026 (12 meses), não ~6 — `gerar_data_aleatoria()`
-> chama `datetime.now()` a cada linha em vez de fixar um único "hoje" para a
-> geração inteira, então a janela de 180 dias pode "escorregar" se o relógio do
-> ambiente variar durante a execução. Não é um problema para o dashboard (o
-> período real é lido diretamente dos dados), só um detalhe para quem for
-> reexecutar `gerar_dados.py` esperando exatamente 6 meses.
 
 ## Como rodar
 
@@ -87,9 +86,11 @@ Linhas na base final tratada:       200
 
 - **Categorias**: normalizadas via `.str.strip()` + mapa de correção, unificando
   variações como `"Alugue"`, `"alugue "` → `"Aluguel"`.
-- **Datas**: parseadas com `pd.to_datetime(..., format="mixed", dayfirst=True)`,
-  já que a coluna vinha com dois formatos simultâneos (timestamp ISO e texto
-  `dd/mm/aaaa`, padrão brasileiro).
+- **Datas**: a coluna vinha com dois formatos simultâneos (timestamp ISO e
+  texto `dd/mm/aaaa`, padrão brasileiro), então cada um é parseado
+  separadamente com seu próprio formato explícito — ver bug #4 abaixo, é o
+  motivo de não dar pra resolver isso com uma chamada só de
+  `pd.to_datetime`.
 - **Valores negativos em "Saída"**: convertidos para positivo. A direção do
   fluxo (entrada/saída) já é representada pela coluna `tipo` — um valor
   negativo ali é sempre erro de lançamento, não uma "saída de verdade".
@@ -172,6 +173,19 @@ Vale registrar porque são evidência de depuração real, não só "rodou sem e
    todas as 200 linhas, mascarando o número real (~8%, só as que vieram como
    texto). A correção foi marcar quais linhas eram texto **antes** do parse,
    não comparar o resultado depois.
+4. **`dayfirst=True` trocando mês por dia até em timestamp ISO** — o mais sério
+   dos quatro, e o mais difícil de perceber: `pd.to_datetime(coluna,
+   format="mixed", dayfirst=True)` deveria só resolver a ambiguidade do texto
+   `dd/mm/aaaa`, mas o `dayfirst` "vazava" pro formato ISO também — sempre que
+   dia e mês eram os dois ≤12, `"2026-05-08"` (8 de maio) virava
+   `"2026-08-05"` (5 de agosto). Isso bagunçava **39% das linhas com
+   timestamp** (72 de 184), silenciosamente — sem erro, sem warning, só data
+   errada. Só apareceu porque o intervalo de datas do dashboard não batia com
+   os "6 meses" esperados (dava quase 12). A correção foi abandonar o parse
+   único com `format="mixed"` e tratar ISO e `dd/mm/aaaa` como duas chamadas
+   separadas, cada uma com o formato explícito — `dayfirst` só faz sentido
+   pro texto ambíguo, nunca pro timestamp ISO (que já é ano-primeiro,
+   inequívoco).
 
 ## Stack
 

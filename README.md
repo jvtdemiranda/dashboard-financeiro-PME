@@ -1,5 +1,7 @@
 # Portfólio de Dashboards
 
+[![Pipeline](https://github.com/jvtdemiranda/teste01/actions/workflows/pipeline.yml/badge.svg)](https://github.com/jvtdemiranda/teste01/actions/workflows/pipeline.yml)
+
 Projetos de portfólio simulando o fluxo real de trabalhos freelance de
 análise/engenharia de dados: receber uma base bruta (com os problemas que
 ela realmente tem), tratar as inconsistências, e entregar um dashboard

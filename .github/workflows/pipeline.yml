@@ -1,0 +1,107 @@
+name: Pipeline
+
+# Valida, a cada push/PR, que o pipeline de dados de cada projeto do
+# portfólio ainda roda do início ao fim sem erro (gerar dado sujo -> tratar
+# -> montar os dashboards). Em push para main, também publica os
+# dashboards HTML no GitHub Pages.
+#
+# Convenção esperada de cada projeto (pasta na raiz do repo): um
+# requirements.txt e uma pasta scripts/ com os passos do pipeline, na
+# ordem gerar_dados.py -> tratar_dados.py -> gerar_dashboard*.py. Um
+# projeto futuro que siga essa convenção entra automaticamente na
+# validação, sem precisar editar este arquivo.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validar pipeline de cada projeto
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Rodar o pipeline de cada projeto
+        run: |
+          set -e
+          shopt -s nullglob
+          for req in */requirements.txt; do
+            projeto="$(dirname "$req")"
+            echo "::group::$projeto"
+            pip install -r "$req"
+            cd "$projeto/scripts"
+            for script in gerar_dados.py tratar_dados.py gerar_dashboard.py gerar_dashboard_html.py; do
+              if [ -f "$script" ]; then
+                echo "-> python $script"
+                python "$script"
+              fi
+            done
+            cd - > /dev/null
+            echo "::endgroup::"
+          done
+
+  deploy-pages:
+    name: Publicar dashboards no GitHub Pages
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Regenerar os dashboards e montar o site
+        run: |
+          set -e
+          shopt -s nullglob
+          mkdir -p _site
+          index="<!doctype html><html lang=\"pt-BR\"><head><meta charset=\"utf-8\">"
+          index+="<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+          index+="<title>Portfólio de Dashboards</title>"
+          index+="<style>body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 16px;line-height:1.5}"
+          index+="a{display:block;padding:14px 16px;margin:10px 0;border:1px solid #ddd;border-radius:10px;text-decoration:none;color:#111}"
+          index+="a:hover{background:#f7f7f5}</style></head><body>"
+          index+="<h1>Portfólio de Dashboards</h1>"
+
+          for req in */requirements.txt; do
+            projeto="$(dirname "$req")"
+            pip install -r "$req"
+            (cd "$projeto/scripts" && for script in gerar_dados.py tratar_dados.py gerar_dashboard.py gerar_dashboard_html.py; do
+              [ -f "$script" ] && python "$script"
+            done)
+
+            html_gerado=$(find "$projeto/dashboard" -maxdepth 1 -name "*.html" 2>/dev/null | head -n1)
+            if [ -n "$html_gerado" ]; then
+              mkdir -p "_site/$projeto"
+              cp "$html_gerado" "_site/$projeto/index.html"
+              index+="<a href=\"./$projeto/\">$projeto</a>"
+            fi
+          done
+
+          index+="</body></html>"
+          echo "$index" > _site/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - uses: actions/deploy-pages@v4
+        id: deployment

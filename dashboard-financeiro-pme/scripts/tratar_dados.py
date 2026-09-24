@@ -50,12 +50,20 @@ def padronizar_datas(df: pd.DataFrame) -> int:
     # dd/mm/aaaa (a "sujeira" real) em vez de timestamp ISO.
     eram_texto_dd_mm = df["data"].astype(str).str.match(r"^\d{2}/\d{2}/\d{4}$")
 
-    # format="mixed" porque a coluna vem com dois formatos diferentes ao
-    # mesmo tempo (timestamp ISO e texto dd/mm/aaaa); dayfirst=True resolve
-    # a ambiguidade do formato texto (padrão brasileiro de data).
-    df["data"] = pd.to_datetime(df["data"], format="mixed", dayfirst=True, errors="coerce")
+    # NÃO dá pra usar format="mixed" + dayfirst=True num parse só: o
+    # dayfirst "vaza" pro formato ISO também, e troca mês por dia sempre
+    # que os dois números são <=12 (ex.: "2026-05-08", 8 de maio, virava
+    # "2026-08-05", 5 de agosto) — bug real encontrado depois que o
+    # relatório de qualidade só fazia sentido tratando ISO e texto
+    # dd/mm/aaaa em duas chamadas separadas, cada uma com o parser certo
+    # pro seu formato (ver README).
+    datas = pd.Series(pd.NaT, index=df.index, dtype="datetime64[ns]")
+    datas.loc[~eram_texto_dd_mm] = pd.to_datetime(df.loc[~eram_texto_dd_mm, "data"], errors="coerce")
+    datas.loc[eram_texto_dd_mm] = pd.to_datetime(
+        df.loc[eram_texto_dd_mm, "data"], format="%d/%m/%Y", errors="coerce")
+
     # Remove a parte de hora/minuto/segundo: para este dashboard só a data importa
-    df["data"] = df["data"].dt.normalize()
+    df["data"] = datas.dt.normalize()
 
     return int(eram_texto_dd_mm.sum())
 

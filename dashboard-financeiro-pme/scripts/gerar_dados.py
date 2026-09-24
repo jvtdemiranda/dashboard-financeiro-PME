@@ -30,19 +30,18 @@ clientes_fornecedores = [
 ]
 
 
-def gerar_data_aleatoria() -> datetime:
-    """Sorteia uma data dentro dos últimos 180 dias (~6 meses)."""
-    hoje = datetime.now()
+def gerar_data_aleatoria(hoje: datetime) -> datetime:
+    """Sorteia uma data dentro dos últimos 180 dias (~6 meses) a partir de um 'hoje' fixo."""
     dias_atras = random.randint(0, 180)
     return hoje - timedelta(days=dias_atras)
 
 
-def gerar_transacao() -> dict:
+def gerar_transacao(hoje: datetime) -> dict:
     """Monta uma linha (dicionário) representando uma transação financeira."""
     tipo = random.choice(tipos)
     valor = round(random.uniform(50, 5000), 2)
     return {
-        "data": gerar_data_aleatoria(),
+        "data": gerar_data_aleatoria(hoje),
         "descricao": f"{tipo} - {random.choice(clientes_fornecedores)}",
         "categoria": random.choice(categorias),
         "tipo": tipo,
@@ -53,7 +52,12 @@ def gerar_transacao() -> dict:
 
 def gerar_base(n_linhas: int = 200) -> pd.DataFrame:
     """Gera n_linhas de transações 'limpas' e retorna como DataFrame."""
-    transacoes = [gerar_transacao() for _ in range(n_linhas)]
+    # 'hoje' é fixado uma única vez para a base inteira: se cada linha chamar
+    # datetime.now() por conta própria, a janela de 180 dias "escorrega" a
+    # cada chamada e o histórico final pode passar de 6 meses (bug real
+    # encontrado numa execução anterior — ver README).
+    hoje = datetime.now()
+    transacoes = [gerar_transacao(hoje) for _ in range(n_linhas)]
     return pd.DataFrame(transacoes)
 
 
