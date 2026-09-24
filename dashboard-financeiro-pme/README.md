@@ -22,11 +22,14 @@ dashboard-financeiro-pme/
 │   ├── raw/           -> transacoes_brutas.csv (dado "sujo", simulando export de sistema)
 │   └── processed/     -> transacoes_tratadas.csv (dado limpo, pronto para o dashboard)
 ├── scripts/
-│   ├── gerar_dados.py      -> gera a base fake com inconsistências propositais
-│   ├── tratar_dados.py     -> lê o dado bruto, aplica limpeza, gera relatório de qualidade
-│   └── gerar_dashboard.py  -> monta o dashboard final em Excel a partir do dado tratado
+│   ├── gerar_dados.py          -> gera a base fake com inconsistências propositais
+│   ├── tratar_dados.py         -> lê o dado bruto, aplica limpeza, gera relatório de qualidade
+│   ├── gerar_dashboard.py      -> monta o dashboard final em Excel a partir do dado tratado
+│   ├── gerar_dashboard_html.py -> monta a versão HTML (mobile) do dashboard
+│   └── dashboard_template.html -> esqueleto HTML/CSS/JS usado pelo script acima
 └── dashboard/
-    └── dashboard_financeiro.xlsx  -> dashboard gerencial (Resumo, Fluxo Mensal, Contas a Pagar/Receber, DRE)
+    ├── dashboard_financeiro.xlsx -> dashboard gerencial (Resumo, Fluxo Mensal, Contas a Pagar/Receber, DRE)
+    └── dashboard_financeiro.html -> mesma coisa, em página única para abrir no celular
 ```
 
 ## O cenário simulado
@@ -57,9 +60,10 @@ seguintes problemas propositais (comuns em exports reais de sistemas):
 pip install -r requirements.txt
 
 cd scripts
-python gerar_dados.py      # gera data/raw/transacoes_brutas.csv
-python tratar_dados.py     # gera data/processed/transacoes_tratadas.csv
-python gerar_dashboard.py  # gera dashboard/dashboard_financeiro.xlsx
+python gerar_dados.py           # gera data/raw/transacoes_brutas.csv
+python tratar_dados.py          # gera data/processed/transacoes_tratadas.csv
+python gerar_dashboard.py       # gera dashboard/dashboard_financeiro.xlsx
+python gerar_dashboard_html.py  # gera dashboard/dashboard_financeiro.html
 ```
 
 O `tratar_dados.py` imprime um relatório de qualidade de dados ao final,
@@ -122,6 +126,32 @@ entradas, vermelho para saídas/despesas, e uma paleta de status reservada
 para outra coisa. Os dois gráficos que comparam entradas/saídas com o saldo
 acumulado ficam em eixos separados (grandezas muito diferentes) em vez de um
 gráfico de eixo duplo.
+
+## O dashboard (HTML, mobile)
+
+`scripts/gerar_dashboard_html.py` gera uma segunda versão do dashboard como
+página única e autocontida (`dashboard/dashboard_financeiro.html`), pensada
+para abrir direto no celular por um link — sem precisar de Excel instalado.
+Mesmas 5 visões da versão em planilha (Resumo, Fluxo Mensal, Contas a
+Pagar/Receber, DRE, Dados), como abas de navegação fixas na parte de baixo
+da tela, no estilo de um app:
+
+- KPIs, gráficos (entradas x saídas por mês, saldo acumulado) e listas são
+  calculados em JavaScript a partir das mesmas transações tratadas,
+  embutidas como JSON na página — mesmo princípio de "uma fonte de
+  verdade" das fórmulas `SUMIFS` da versão em Excel, só que recalculado no
+  navegador em vez de pelo Excel.
+- Gráficos são SVG desenhado à mão (sem biblioteca de gráficos), com toque
+  para ver valores exatos.
+- Layout responsivo mobile-first, com tema claro/escuro automático
+  (segue a preferência do aparelho).
+- Aba "Dados" tem busca e filtro por tipo (entrada/saída) sobre as 200
+  transações.
+
+`dashboard_template.html` guarda o HTML/CSS/JS; o script só troca o
+marcador dos dados pelo JSON gerado a partir do CSV tratado — reexecutar
+`gerar_dashboard_html.py` depois de mudar os dados regenera a página
+inteira.
 
 ## Bugs reais encontrados no processo
 
