@@ -1,6 +1,6 @@
 # Portfólio de Projetos Freelance
 
-[![Pipeline](https://github.com/jvtdemiranda/teste01/actions/workflows/pipeline.yml/badge.svg)](https://github.com/jvtdemiranda/teste01/actions/workflows/pipeline.yml)
+[![Pipeline](https://github.com/jvtdemiranda/dashboard-financeiro-PME/actions/workflows/pipeline.yml/badge.svg)](https://github.com/jvtdemiranda/dashboard-financeiro-PME/actions/workflows/pipeline.yml)
 
 Projetos de portfólio simulando trabalhos reais de freelancer em dados e
 web, escolhidos com base numa pesquisa de vagas reais no Workana e
@@ -9,7 +9,7 @@ web, escolhidos com base numa pesquisa de vagas reais no Workana e
 | # | Projeto | Cenário | Stack | Link | Status |
 |---|---------|---------|-------|------|--------|
 | 1 | [`dashboard-financeiro-pme`](dashboard-financeiro-pme/) | Fluxo de caixa, contas a pagar/receber e DRE simplificado para uma pequena empresa/prestador de serviço | Python (pandas) + Excel (openpyxl) | [dashboard-financeiro-pme.vercel.app](https://dashboard-financeiro-pme.vercel.app) | ✅ Concluído |
-| 2 | [`landing-prestador-servico`](landing-prestador-servico/) | Landing page com captação via WhatsApp e calculadora interativa, pro nicho mais recorrente encontrado na pesquisa (prestador de serviço local) | HTML/CSS/JS puro | _(publicar)_ | ✅ Concluído |
+| 2 | [`landing-prestador-servico`](landing-prestador-servico/) | Landing page com captação via WhatsApp e calculadora interativa, pro nicho mais recorrente encontrado na pesquisa (prestador de serviço local) | HTML/CSS/JS puro | [landing-prestador-servico.vercel.app](https://landing-prestador-servico.vercel.app) | ✅ Concluído |
 | 3 | Dashboard com dado ao vivo via API pública | Dashboard financeiro/PME, mas consumindo API real em vez de CSV estático | Python + REST API | — | 🔜 Planejado |
 | 4 | Landing page para advocacia | Mesmo padrão do projeto 2, focado no vertical jurídico (ângulo: compliance com regras de publicidade da OAB) | HTML/CSS/JS | — | 🔜 Planejado |
 | 5 | Landing page de produto / e-commerce | Página de produto único voltada pra tráfego pago (Google/Meta Ads) | HTML/CSS/JS | — | 🔜 Planejado |
@@ -43,7 +43,7 @@ comando acima depois de mudar um projeto, o badge fica vermelho avisando.
 Pra cada projeto novo do portfólio, cria-se um projeto Vercel novo
 apontando só pra pasta dele:
 
-1. [vercel.com](https://vercel.com) → **Add New... → Project** → selecione este repositório (`jvtdemiranda/teste01`) de novo — o Vercel deixa importar o mesmo repo várias vezes como projetos diferentes.
+1. [vercel.com](https://vercel.com) → **Add New... → Project** → selecione este repositório (`jvtdemiranda/dashboard-financeiro-PME`) de novo — o Vercel deixa importar o mesmo repo várias vezes como projetos diferentes.
 2. Dê um nome pro projeto (ex.: `dashboard-financeiro-pme-2`, ou o nome da pasta do projeto).
 3. **Root Directory** = `site/<nome-da-pasta-do-projeto>`.
 4. Framework: **Other**, sem build.
