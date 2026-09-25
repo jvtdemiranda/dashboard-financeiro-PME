@@ -18,16 +18,19 @@ import pandas as pd
 random.seed(42)
 
 # --- "Matéria-prima" para sortear os dados ---
-categorias = [
-    "Aluguel", "Fornecedor", "Salário", "Venda de Serviço",
-    "Imposto", "Marketing", "Manutenção",
+# Categoria é sorteada de acordo com o tipo (não faz sentido uma "Entrada"
+# vir categorizada como "Aluguel", nem uma "Saída" como "Venda de Serviço") —
+# ver bug #5 no README.
+CATEGORIA_RECEITA = "Venda de Serviço"
+categorias_despesa = [
+    "Aluguel", "Fornecedor", "Salário", "Imposto", "Marketing", "Manutenção",
 ]
 tipos = ["Entrada", "Saída"]
 status_pagamento = ["Pago", "Pendente", "Atrasado"]
-clientes_fornecedores = [
-    "Cliente A", "Cliente B", "Cliente C",
-    "Fornecedor X", "Fornecedor Y", "Fornecedor Z",
-]
+# Mesma lógica pra contraparte: quem paga a empresa é sempre um cliente,
+# quem a empresa paga é sempre um fornecedor.
+clientes = ["Cliente A", "Cliente B", "Cliente C"]
+fornecedores = ["Fornecedor X", "Fornecedor Y", "Fornecedor Z"]
 
 
 def gerar_data_aleatoria(hoje: datetime) -> datetime:
@@ -40,10 +43,16 @@ def gerar_transacao(hoje: datetime) -> dict:
     """Monta uma linha (dicionário) representando uma transação financeira."""
     tipo = random.choice(tipos)
     valor = round(random.uniform(50, 5000), 2)
+    if tipo == "Entrada":
+        categoria = CATEGORIA_RECEITA
+        contraparte = random.choice(clientes)
+    else:
+        categoria = random.choice(categorias_despesa)
+        contraparte = random.choice(fornecedores)
     return {
         "data": gerar_data_aleatoria(hoje),
-        "descricao": f"{tipo} - {random.choice(clientes_fornecedores)}",
-        "categoria": random.choice(categorias),
+        "descricao": f"{tipo} - {contraparte}",
+        "categoria": categoria,
         "tipo": tipo,
         "valor": valor,
         "status": random.choice(status_pagamento),

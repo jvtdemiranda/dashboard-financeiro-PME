@@ -47,8 +47,7 @@ MONTH_FMT = "mmm/yyyy"
 PCT_FMT = "0.0%"
 
 CATEGORIAS_DESPESA = [
-    "Aluguel", "Fornecedor", "Imposto", "Manutenção", "Marketing",
-    "Salário", "Venda de Serviço",
+    "Aluguel", "Fornecedor", "Imposto", "Manutenção", "Marketing", "Salário",
 ]
 
 THIN = Side(style="thin", color=GRID)
@@ -142,7 +141,7 @@ def montar_dados(wb, df):
     return ws, n
 
 
-def montar_fluxo_mensal(wb, meses):
+def montar_fluxo_mensal(wb, meses, ultima_linha_dados):
     ws = wb.create_sheet("Fluxo Mensal")
     titulo_pagina(ws, "Fluxo de Caixa Mensal",
                   f"Período: {meses[0].strftime('%b/%Y')} a {meses[-1].strftime('%b/%Y')} "
@@ -159,12 +158,12 @@ def montar_fluxo_mensal(wb, meses):
         r = primeira_linha + i
         ws.cell(row=r, column=1, value=mes).number_format = MONTH_FMT
         ws.cell(row=r, column=2,
-                value=(f'=SUMIFS(Dados!$E$2:$E$201,Dados!$D$2:$D$201,"Entrada",'
-                       f'Dados!$A$2:$A$201,">="&A{r},Dados!$A$2:$A$201,"<"&EDATE(A{r},1))')
+                value=(f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Entrada",'
+                       f'Dados!$A$2:$A${ultima_linha_dados},">="&A{r},Dados!$A$2:$A${ultima_linha_dados},"<"&EDATE(A{r},1))')
                 ).number_format = CUR_FMT
         ws.cell(row=r, column=3,
-                value=(f'=SUMIFS(Dados!$E$2:$E$201,Dados!$D$2:$D$201,"Saída",'
-                       f'Dados!$A$2:$A$201,">="&A{r},Dados!$A$2:$A$201,"<"&EDATE(A{r},1))')
+                value=(f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Saída",'
+                       f'Dados!$A$2:$A${ultima_linha_dados},">="&A{r},Dados!$A$2:$A${ultima_linha_dados},"<"&EDATE(A{r},1))')
                 ).number_format = CUR_FMT
         ws.cell(row=r, column=4, value=f"=B{r}-C{r}").number_format = CUR_FMT
         if i == 0:
@@ -236,7 +235,7 @@ def montar_fluxo_mensal(wb, meses):
     return ws, primeira_linha, ultima_linha, linha_total
 
 
-def montar_contas(wb, df):
+def montar_contas(wb, df, ultima_linha_dados):
     ws = wb.create_sheet("Contas a Pagar e Receber")
     titulo_pagina(ws, "Contas a Pagar e Receber",
                   "Transações com status Pendente ou Atrasado (em aberto)", 10)
@@ -252,8 +251,8 @@ def montar_contas(wb, df):
         for c, status in [(2, "Pendente"), (3, "Atrasado")]:
             col_letra = get_column_letter(c)
             ws.cell(row=r, column=c,
-                    value=(f'=SUMIFS(Dados!$E$2:$E$201,Dados!$D$2:$D$201,"{tipo}",'
-                           f'Dados!$F$2:$F$201,"{status}")')
+                    value=(f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"{tipo}",'
+                           f'Dados!$F$2:$F${ultima_linha_dados},"{status}")')
                     ).number_format = CUR_FMT
         ws.cell(row=r, column=4, value=f"=B{r}+C{r}").number_format = CUR_FMT
         ws.cell(row=r, column=4).font = Font(bold=True)
@@ -315,13 +314,13 @@ def montar_contas(wb, df):
     return ws
 
 
-def montar_dre(wb):
+def montar_dre(wb, ultima_linha_dados):
     ws = wb.create_sheet("DRE")
     titulo_pagina(ws, "DRE Simplificado",
                   "Demonstrativo de Resultado — regime de caixa, a partir da aba Dados", 5)
 
     ws.cell(row=4, column=1, value="Receita Bruta (Entradas)").font = Font(bold=True)
-    receita_cell = ws.cell(row=4, column=2, value='=SUMIFS(Dados!$E$2:$E$201,Dados!$D$2:$D$201,"Entrada")')
+    receita_cell = ws.cell(row=4, column=2, value=f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Entrada")')
     receita_cell.font = Font(bold=True, color=BLUE)
     receita_cell.number_format = CUR_FMT
 
@@ -332,8 +331,8 @@ def montar_dre(wb):
         r = primeira + i
         ws.cell(row=r, column=1, value=f"   {categoria}")
         ws.cell(row=r, column=2,
-                value=(f'=SUMIFS(Dados!$E$2:$E$201,Dados!$D$2:$D$201,"Saída",'
-                       f'Dados!$C$2:$C$201,"{categoria}")')
+                value=(f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Saída",'
+                       f'Dados!$C$2:$C${ultima_linha_dados},"{categoria}")')
                 ).number_format = CUR_FMT
     ultima = primeira + len(CATEGORIAS_DESPESA) - 1
 
@@ -455,9 +454,10 @@ def main():
     wb.remove(wb.active)  # remove a aba "Sheet" padrão
 
     _, n_linhas = montar_dados(wb, df)
-    _, primeira_linha, ultima_linha, linha_total_fluxo = montar_fluxo_mensal(wb, meses)
-    montar_contas(wb, df)
-    _, linha_resultado_dre = montar_dre(wb)
+    ultima_linha_dados = n_linhas + 1
+    _, primeira_linha, ultima_linha, linha_total_fluxo = montar_fluxo_mensal(wb, meses, ultima_linha_dados)
+    montar_contas(wb, df, ultima_linha_dados)
+    _, linha_resultado_dre = montar_dre(wb, ultima_linha_dados)
     montar_resumo(wb, meses, linha_total_fluxo, linha_resultado_dre)
 
     wb["Resumo"].sheet_view.showGridLines = False
