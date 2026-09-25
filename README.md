@@ -81,7 +81,7 @@ Linhas na base bruta:              200
 Categorias corrigidas:              20
 Datas reformatadas/padronizadas:    16
 Linhas removidas (data inválida):   0
-Sinais de valor corrigidos:         5
+Sinais de valor corrigidos:         4
 Status vazios preenchidos:          8
 Linhas na base final tratada:       200
 ```
@@ -190,6 +190,20 @@ Vale registrar porque são evidência de depuração real, não só "rodou sem e
    separadas, cada uma com o formato explícito — `dayfirst` só faz sentido
    pro texto ambíguo, nunca pro timestamp ISO (que já é ano-primeiro,
    inequívoco).
+5. **Categoria e contraparte sorteadas sem relação com o tipo da transação**
+   — `gerar_dados.py` sorteava `categoria` (e o cliente/fornecedor da
+   descrição) de forma totalmente independente de `tipo`, então qualquer
+   uma das 7 categorias podia cair tanto em Entrada quanto em Saída. O
+   efeito não era só "esquisito nos dados": a aba DRE chegou a mostrar
+   **"Venda de Serviço" como categoria de despesa**, e a lista de contas
+   mostrava linhas como "Entrada - Fornecedor Y" (dinheiro entrando vindo
+   de um fornecedor). Só ficou óbvio olhando o dashboard renderizado, não
+   examinando o CSV coluna por coluna. A correção foi amarrar a lógica ao
+   tipo: toda Entrada é `"Venda de Serviço"` com um cliente como
+   contraparte, toda Saída sorteia entre as 6 categorias de despesa reais
+   com um fornecedor como contraparte — e `CATEGORIAS_DESPESA`, em
+   `gerar_dashboard.py`, parou de incluir "Venda de Serviço" na soma de
+   despesas do DRE.
 
 ## Stack
 
