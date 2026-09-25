@@ -14,6 +14,14 @@ gerencial (fluxo de caixa, contas a pagar/receber, DRE simplificado).
   <img src="docs/screenshot-dre.png" width="31%" alt="Aba DRE simplificado, com receita, despesas por categoria e resultado líquido">
 </p>
 
+> **Em resumo (pra quem não é da área técnica):** este é um painel que
+> organiza as finanças de uma empresa — quanto entrou, quanto saiu, o
+> que está pendente de pagamento — e mostra tudo em gráficos simples de
+> ler, direto do celular, sem precisar abrir Excel. O diferencial é que
+> ele foi feito pra lidar com dados "sujos", do jeito que realmente
+> chegam de um sistema real (datas em formatos diferentes, erros de
+> digitação), e ainda assim entregar o número certo no final.
+
 ## Por que esse projeto
 
 A maioria dos portfólios mostra só o resultado bonito (o dashboard pronto).
