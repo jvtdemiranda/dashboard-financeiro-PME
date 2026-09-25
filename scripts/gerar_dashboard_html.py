@@ -12,7 +12,8 @@ verdade" das fórmulas SUMIFS da planilha.
 
 dashboard_template.html é o esqueleto (HTML/CSS/JS); este script só
 substitui o marcador /*__DATA__*/ pelas transações em JSON e escreve o
-resultado em dashboard/dashboard_financeiro.html.
+resultado em public/index.html — pasta que o Vercel publica diretamente
+(Root Directory = public, sem build step).
 """
 
 import json
@@ -25,9 +26,9 @@ def caminhos():
     pasta_raiz = os.path.join(os.path.dirname(__file__), "..")
     csv_tratado = os.path.join(pasta_raiz, "data", "processed", "transacoes_tratadas.csv")
     template = os.path.join(os.path.dirname(__file__), "dashboard_template.html")
-    pasta_dashboard = os.path.join(pasta_raiz, "dashboard")
-    os.makedirs(pasta_dashboard, exist_ok=True)
-    html_saida = os.path.join(pasta_dashboard, "dashboard_financeiro.html")
+    pasta_public = os.path.join(pasta_raiz, "public")
+    os.makedirs(pasta_public, exist_ok=True)
+    html_saida = os.path.join(pasta_public, "index.html")
     return csv_tratado, template, html_saida
 
 
