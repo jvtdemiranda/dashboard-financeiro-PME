@@ -36,8 +36,6 @@ def padronizar_categorias(df: pd.DataFrame) -> int:
     categoria_original = df["categoria"].copy()
     df["categoria"] = df["categoria"].str.strip()
     df["categoria"] = df["categoria"].replace(MAPA_CATEGORIAS_CORRETAS)
-    # Ainda pode sobrar variação de maiúscula/minúscula; padroniza por segurança
-    df["categoria"] = df["categoria"].str.strip()
     return int((categoria_original != df["categoria"]).sum())
 
 

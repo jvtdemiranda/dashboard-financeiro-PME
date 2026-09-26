@@ -97,7 +97,7 @@ Linhas na base final tratada:       200
 ## Decisões de tratamento (e por quê)
 
 - **Categorias**: normalizadas via `.str.strip()` + mapa de correção, unificando
-  variações como `"Alugue"`, `"alugue "` → `"Aluguel"`.
+  variações como `"Alugue"` → `"Aluguel"` e `"fornecedor "` → `"Fornecedor"`.
 - **Datas**: a coluna vinha com dois formatos simultâneos (timestamp ISO e
   texto `dd/mm/aaaa`, padrão brasileiro), então cada um é parseado
   separadamente com seu próprio formato explícito — ver bug #4 abaixo, é o
@@ -115,14 +115,23 @@ Linhas na base final tratada:       200
 Gerado por `scripts/gerar_dashboard.py` a partir de `transacoes_tratadas.csv`,
 em `dashboard/dashboard_financeiro.xlsx`, com 5 abas:
 
-- **Resumo** — capa com KPIs (entradas, saídas, saldo, contas a receber/pagar
-  em aberto, resultado líquido) e o gráfico de fluxo de caixa mensal.
+- **Resumo** — capa com KPIs (recebido, pago, saldo de caixa, contas a
+  receber/pagar em aberto, resultado líquido) e o gráfico de fluxo de caixa
+  mensal.
 - **Fluxo Mensal** — entradas, saídas, saldo do mês e saldo acumulado por mês,
   com gráfico de barras (entradas x saídas) e linha (saldo acumulado).
+  **Regime de caixa**: só entram transações com status "Pago".
 - **Contas a Pagar e Receber** — resumo de valores em aberto por status
   (Pendente/Atrasado) e o detalhamento linha a linha de cada conta.
 - **DRE** — receita bruta, despesas por categoria e resultado líquido, com
-  gráfico de despesas por categoria.
+  gráfico de despesas por categoria. **Regime de competência**: entram todas
+  as transações lançadas, pagas ou não.
+
+A diferença entre os dois regimes é proposital e é a informação mais útil
+pro dono do negócio: o DRE diz se a empresa **deu lucro** no período; o
+fluxo de caixa diz quanto dinheiro **de fato entrou e saiu**. Com os dados
+simulados, a empresa teve R$ 61.964 de resultado, mas só R$ 21.337 de
+saldo de caixa — o resto está pendente ou atrasado com clientes.
 - **Dados** — a base tratada completa, como Tabela do Excel (filtro embutido).
 
 **Os totais e KPIs são fórmulas do Excel (`SUMIFS`), não valores fixos** —
@@ -185,8 +194,8 @@ Vale registrar porque são evidência de depuração real, não só "rodou sem e
    todas as 200 linhas, mascarando o número real (~8%, só as que vieram como
    texto). A correção foi marcar quais linhas eram texto **antes** do parse,
    não comparar o resultado depois.
-4. **`dayfirst=True` trocando mês por dia até em timestamp ISO** — o mais sério
-   dos quatro, e o mais difícil de perceber: `pd.to_datetime(coluna,
+4. **`dayfirst=True` trocando mês por dia até em timestamp ISO** — um dos mais sérios,
+   e o mais difícil de perceber: `pd.to_datetime(coluna,
    format="mixed", dayfirst=True)` deveria só resolver a ambiguidade do texto
    `dd/mm/aaaa`, mas o `dayfirst` "vazava" pro formato ISO também — sempre que
    dia e mês eram os dois ≤12, `"2026-05-08"` (8 de maio) virava
@@ -212,6 +221,23 @@ Vale registrar porque são evidência de depuração real, não só "rodou sem e
    com um fornecedor como contraparte — e `CATEGORIAS_DESPESA`, em
    `gerar_dashboard.py`, parou de incluir "Venda de Serviço" na soma de
    despesas do DRE.
+6. **"Fluxo de caixa" somando dinheiro que ainda não entrou** — achado numa
+   revisão depois de publicado. O fluxo de caixa e o DRE somavam todas as
+   transações, inclusive as pendentes e atrasadas, e o DRE ainda dizia
+   "regime de caixa". Na prática, ~65% das entradas (R$ 199.713) contavam
+   ao mesmo tempo como "dinheiro que entrou no caixa" e como "conta a
+   receber em aberto" — o painel mostrava R$ 61.964 de saldo quando só
+   R$ 21.337 tinha de fato sido pago. Um contador pegaria isso na hora.
+   Corrigido separando os dois regimes: fluxo de caixa só com status
+   "Pago", DRE por competência (tudo lançado), cada um com o rótulo certo.
+7. **Texto do export inserido na página sem escape** — as descrições das
+   transações entravam direto num `innerHTML`, e o JSON embutido na página
+   não escapava `<`. Com dados simulados não há risco, mas a proposta do
+   projeto é receber export de sistema real, onde uma descrição contendo
+   HTML seria executada no navegador. Corrigido com a mesma proteção em
+   duas camadas do [painel de criptomoedas](https://github.com/jvtdemiranda/dashboard-criptomoedas-api)
+   (`escapeHtml()` no JS + escape de `<` no JSON), e testado com um
+   payload real antes e depois.
 
 ## Stack
 

@@ -14,7 +14,8 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-# Semente fixa para o resultado ser reproduzível (sempre gera a mesma base)
+# Semente fixa: valores, categorias e sujeiras são sempre os mesmos. As
+# datas não: são relativas ao dia em que o script roda (janela de 180 dias).
 random.seed(42)
 
 # --- "Matéria-prima" para sortear os dados ---
