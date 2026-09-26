@@ -145,7 +145,7 @@ def montar_fluxo_mensal(wb, meses, ultima_linha_dados):
     ws = wb.create_sheet("Fluxo Mensal")
     titulo_pagina(ws, "Fluxo de Caixa Mensal",
                   f"Período: {meses[0].strftime('%b/%Y')} a {meses[-1].strftime('%b/%Y')} "
-                  "· valores somados a partir da aba Dados",
+                  "· regime de caixa: só transações com status Pago (pendentes/atrasadas ficam em Contas a Pagar e Receber)",
                   5)
 
     cabecalhos = ["Mês", "Entradas", "Saídas", "Saldo do Mês", "Saldo Acumulado"]
@@ -154,17 +154,15 @@ def montar_fluxo_mensal(wb, meses, ultima_linha_dados):
     header_row(ws, 4, 1, 5)
 
     primeira_linha = 5
+    u = ultima_linha_dados
     for i, mes in enumerate(meses):
         r = primeira_linha + i
         ws.cell(row=r, column=1, value=mes).number_format = MONTH_FMT
-        ws.cell(row=r, column=2,
-                value=(f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Entrada",'
-                       f'Dados!$A$2:$A${ultima_linha_dados},">="&A{r},Dados!$A$2:$A${ultima_linha_dados},"<"&EDATE(A{r},1))')
-                ).number_format = CUR_FMT
-        ws.cell(row=r, column=3,
-                value=(f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Saída",'
-                       f'Dados!$A$2:$A${ultima_linha_dados},">="&A{r},Dados!$A$2:$A${ultima_linha_dados},"<"&EDATE(A{r},1))')
-                ).number_format = CUR_FMT
+        for col, tipo in [(2, "Entrada"), (3, "Saída")]:
+            ws.cell(row=r, column=col,
+                    value=(f'=SUMIFS(Dados!$E$2:$E${u},Dados!$D$2:$D${u},"{tipo}",Dados!$F$2:$F${u},"Pago",'
+                           f'Dados!$A$2:$A${u},">="&A{r},Dados!$A$2:$A${u},"<"&EDATE(A{r},1))')
+                    ).number_format = CUR_FMT
         ws.cell(row=r, column=4, value=f"=B{r}-C{r}").number_format = CUR_FMT
         if i == 0:
             ws.cell(row=r, column=5, value=f"=D{r}").number_format = CUR_FMT
@@ -317,7 +315,7 @@ def montar_contas(wb, df, ultima_linha_dados):
 def montar_dre(wb, ultima_linha_dados):
     ws = wb.create_sheet("DRE")
     titulo_pagina(ws, "DRE Simplificado",
-                  "Demonstrativo de Resultado — regime de caixa, a partir da aba Dados", 5)
+                  "Demonstrativo de Resultado — regime de competência (todas as transações lançadas, pagas ou não)", 5)
 
     ws.cell(row=4, column=1, value="Receita Bruta (Entradas)").font = Font(bold=True)
     receita_cell = ws.cell(row=4, column=2, value=f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Entrada")')
@@ -402,9 +400,9 @@ def montar_resumo(wb, meses, linha_total_fluxo, linha_resultado_dre):
         ws.row_dimensions[row_label].height = 16
         ws.row_dimensions[row_value].height = 28
 
-    tile(4, 5, 1, 3, "TOTAL DE ENTRADAS", "='Fluxo Mensal'!B" + str(linha_total_fluxo), BLUE)
-    tile(4, 5, 4, 6, "TOTAL DE SAÍDAS", "='Fluxo Mensal'!C" + str(linha_total_fluxo), RED)
-    tile(4, 5, 7, 9, "SALDO DO PERÍODO", "='Fluxo Mensal'!D" + str(linha_total_fluxo), INK)
+    tile(4, 5, 1, 3, "RECEBIDO (CAIXA)", "='Fluxo Mensal'!B" + str(linha_total_fluxo), BLUE)
+    tile(4, 5, 4, 6, "PAGO (CAIXA)", "='Fluxo Mensal'!C" + str(linha_total_fluxo), RED)
+    tile(4, 5, 7, 9, "SALDO DE CAIXA", "='Fluxo Mensal'!D" + str(linha_total_fluxo), INK)
 
     tile(7, 8, 1, 3, "CONTAS A RECEBER (EM ABERTO)", "='Contas a Pagar e Receber'!D5", BLUE)
     tile(7, 8, 4, 6, "CONTAS A PAGAR (EM ABERTO)", "='Contas a Pagar e Receber'!D6", RED)

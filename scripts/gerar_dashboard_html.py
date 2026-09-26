@@ -39,7 +39,11 @@ def montar_dados_json(df: pd.DataFrame) -> str:
          round(float(row.valor), 2), row.status]
         for row in df.itertuples(index=False)
     ]
-    return json.dumps(linhas, ensure_ascii=False, separators=(",", ":"))
+    dados_json = json.dumps(linhas, ensure_ascii=False, separators=(",", ":"))
+    # Descrições vêm de um export de sistema: um texto contendo "</script>"
+    # fecharia a tag onde o JSON é embutido. Trocar "<" pelo escape Unicode
+    # mantém o JSON idêntico pro JavaScript.
+    return dados_json.replace("<", "\\u003c")
 
 
 def main():

@@ -234,10 +234,10 @@
 <section class="view" id="view-resumo">
   <div class="section-title">Visão geral</div>
   <div class="tiles">
-    <div class="tile accent-blue"><div class="label">Entradas</div><div class="value num" id="kpi-entradas">—</div></div>
-    <div class="tile accent-red"><div class="label">Saídas</div><div class="value num" id="kpi-saidas">—</div></div>
-    <div class="tile" id="tile-saldo"><div class="label">Saldo do período</div><div class="value num" id="kpi-saldo">—</div></div>
-    <div class="tile" id="tile-resultado"><div class="label">Resultado líquido</div><div class="value num" id="kpi-resultado">—</div></div>
+    <div class="tile accent-blue"><div class="label">Recebido</div><div class="value num" id="kpi-entradas">—</div></div>
+    <div class="tile accent-red"><div class="label">Pago</div><div class="value num" id="kpi-saidas">—</div></div>
+    <div class="tile" id="tile-saldo"><div class="label">Saldo de caixa</div><div class="value num" id="kpi-saldo">—</div></div>
+    <div class="tile" id="tile-resultado"><div class="label">Resultado (DRE)</div><div class="value num" id="kpi-resultado">—</div></div>
     <div class="tile accent-blue"><div class="label">A receber (aberto)</div><div class="value num" id="kpi-receber">—</div></div>
     <div class="tile accent-red"><div class="label">A pagar (aberto)</div><div class="value num" id="kpi-pagar">—</div></div>
   </div>
@@ -250,6 +250,12 @@
     </div>
     <div class="chart-scroll" id="chart-bars-resumo"></div>
   </div>
+
+  <footer class="note">
+    Fluxo de caixa considera só transações com status Pago (dinheiro que de fato
+    entrou ou saiu). Pendentes e atrasadas aparecem em "A receber" / "A pagar";
+    o Resultado (DRE) considera tudo que foi lançado, pago ou não.
+  </footer>
 </section>
 
 <section class="view" id="view-fluxo" hidden>
@@ -300,7 +306,9 @@
   <div class="card" id="dre-despesas"></div>
 
   <footer class="note">
-    DRE simplificado em regime de caixa, calculado a partir das mesmas transações tratadas do dashboard.
+    DRE simplificado em regime de competência: considera todas as transações
+    lançadas no período, pagas ou não. O fluxo de caixa (abas Resumo e Fluxo)
+    considera só o que foi efetivamente pago.
   </footer>
 </section>
 
@@ -351,7 +359,7 @@ var DATA = /*__DATA__*/;
 
 var MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 
-var fmtBRL = new Intl.NumberFormat("pt-BR", {style:"currency", currency:"BRL", maximumFractionDigits:0});
+var fmtBRL = new Intl.NumberFormat("pt-BR", {style:"currency", currency:"BRL", minimumFractionDigits:0, maximumFractionDigits:0});
 var fmtBRLCent = new Intl.NumberFormat("pt-BR", {style:"currency", currency:"BRL"});
 
 function fmtDate(iso){
@@ -369,24 +377,33 @@ function statusClass(s){
   return "naoinformado";
 }
 
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+
 // ---- aggregate ----
+// Fluxo de caixa (regime de caixa): só o que foi efetivamente pago/recebido.
+// DRE (regime de competência): tudo que foi lançado, pago ou não.
 var totalEntradas = 0, totalSaidas = 0;
+var receitaCompetencia = 0;
 var porMes = {}; // ym -> {entradas, saidas}
 var despesasPorCategoria = {};
 var receberAberto = [], pagarAberto = [];
 
 DATA.forEach(function(t){
-  var data=t[0], desc=t[1], cat=t[2], tipo=t[3], valor=t[4], status=t[5];
+  var data=t[0], cat=t[2], tipo=t[3], valor=t[4], status=t[5];
   var ym = data.slice(0,7);
   if(!porMes[ym]) porMes[ym] = {entradas:0, saidas:0};
+  var pago = status === "Pago";
   if(tipo === "Entrada"){
-    totalEntradas += valor;
-    porMes[ym].entradas += valor;
+    receitaCompetencia += valor;
+    if(pago){ totalEntradas += valor; porMes[ym].entradas += valor; }
     if(status === "Pendente" || status === "Atrasado") receberAberto.push(t);
   } else {
-    totalSaidas += valor;
-    porMes[ym].saidas += valor;
     despesasPorCategoria[cat] = (despesasPorCategoria[cat]||0) + valor;
+    if(pago){ totalSaidas += valor; porMes[ym].saidas += valor; }
     if(status === "Pendente" || status === "Atrasado") pagarAberto.push(t);
   }
 });
@@ -402,8 +419,8 @@ var fluxoMensal = meses.map(function(ym){
 
 var saldoPeriodo = totalEntradas - totalSaidas;
 var totalDespesas = Object.keys(despesasPorCategoria).reduce(function(s,k){return s+despesasPorCategoria[k];},0);
-var resultadoLiquido = totalEntradas - totalDespesas;
-var margem = totalEntradas ? (resultadoLiquido/totalEntradas) : 0;
+var resultadoLiquido = receitaCompetencia - totalDespesas;
+var margem = receitaCompetencia ? (resultadoLiquido/receitaCompetencia) : 0;
 
 function somaAberto(list){ return list.reduce(function(s,t){return s+t[4];},0); }
 var totalReceberAberto = somaAberto(receberAberto);
@@ -558,9 +575,9 @@ function renderContas(tipo){
   var html = sorted.map(function(t){
     return '<div class="txn">' +
       '<span class="dot ' + cls + '"></span>' +
-      '<div class="info"><div class="desc">' + t[1] + '</div><div class="meta">' + t[2] + '</div></div>' +
+      '<div class="info"><div class="desc">' + escapeHtml(t[1]) + '</div><div class="meta">' + escapeHtml(t[2]) + '</div></div>' +
       '<div class="right"><div class="amount ' + cls + '">' + fmtBRL.format(t[4]) + '</div>' +
-      '<span class="pill ' + statusClass(t[5]) + '"><i></i>' + t[5] + '</span></div>' +
+      '<span class="pill ' + statusClass(t[5]) + '"><i></i>' + escapeHtml(t[5]) + '</span></div>' +
     '</div>';
   }).join("") || '<div class="empty">Nenhuma conta em aberto.</div>';
   document.getElementById("contas-list").innerHTML = html;
@@ -578,7 +595,7 @@ document.getElementById("chip-pagar").addEventListener("click", function(){
 renderContas("receber");
 
 // ---- DRE ----
-document.getElementById("dre-receita").textContent = fmtBRLCent.format(totalEntradas);
+document.getElementById("dre-receita").textContent = fmtBRLCent.format(receitaCompetencia);
 var elDreResultado = document.getElementById("dre-resultado");
 elDreResultado.textContent = fmtBRLCent.format(resultadoLiquido);
 elDreResultado.style.color = resultadoLiquido >= 0 ? "var(--success-text)" : "var(--red)";
@@ -591,7 +608,7 @@ document.getElementById("dre-margem").textContent = "Margem líquida: " + (marge
     var v = despesasPorCategoria[c];
     var pct = maxV ? (v/maxV*100) : 0;
     return '<div class="dre-row">' +
-      '<div class="top"><span class="cat">' + c + '</span><span class="val num">' + fmtBRLCent.format(v) + '</span></div>' +
+      '<div class="top"><span class="cat">' + escapeHtml(c) + '</span><span class="val num">' + fmtBRLCent.format(v) + '</span></div>' +
       '<div class="dre-track"><div class="dre-fill" style="width:' + pct.toFixed(1) + '%"></div></div>' +
     '</div>';
   }).join("");
@@ -619,9 +636,9 @@ document.getElementById("dre-margem").textContent = "Margem líquida: " + (marge
       var cls = t[3] === "Entrada" ? "entrada" : "saida";
       return '<div class="txn">' +
         '<span class="dot ' + cls + '"></span>' +
-        '<div class="info"><div class="desc">' + t[1] + '</div><div class="meta">' + t[2] + ' · ' + fmtDate(t[0]) + '</div></div>' +
+        '<div class="info"><div class="desc">' + escapeHtml(t[1]) + '</div><div class="meta">' + escapeHtml(t[2]) + ' · ' + fmtDate(t[0]) + '</div></div>' +
         '<div class="right"><div class="amount ' + cls + '">' + fmtBRL.format(t[4]) + '</div>' +
-        '<span class="pill ' + statusClass(t[5]) + '"><i></i>' + t[5] + '</span></div>' +
+        '<span class="pill ' + statusClass(t[5]) + '"><i></i>' + escapeHtml(t[5]) + '</span></div>' +
       '</div>';
     }).join("") || '<div class="empty">Nenhuma transação encontrada.</div>';
     document.getElementById("dados-list").innerHTML = html;
