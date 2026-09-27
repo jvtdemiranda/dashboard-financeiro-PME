@@ -62,6 +62,18 @@ def caminhos():
     return csv_tratado, xlsx_saida
 
 
+def eixos_visiveis(chart):
+    """
+    O openpyxl 3.1 não grava que os eixos são visíveis, e há relatos de
+    versões recentes do Excel escondendo o eixo nesse caso (gráfico sem
+    meses e sem valores). Marcar explicitamente não muda nada onde já
+    funcionava.
+    """
+    chart.x_axis.delete = False
+    chart.y_axis.delete = False
+    return chart
+
+
 def draw_box(ws, r1, c1, r2, c2, color=GRID):
     """Desenha só o contorno externo de um retângulo de células (sem linhas internas)."""
     for col in range(c1, c2 + 1):
@@ -192,7 +204,7 @@ def montar_fluxo_mensal(wb, meses, ultima_linha_dados):
         ws.column_dimensions[get_column_letter(j)].width = w
 
     # Gráfico 1: Entradas x Saídas por mês (barras, mesma escala -> mesmo eixo)
-    chart1 = BarChart()
+    chart1 = eixos_visiveis(BarChart())
     chart1.type = "col"
     chart1.grouping = "clustered"
     chart1.title = "Entradas x Saídas por Mês"
@@ -211,7 +223,7 @@ def montar_fluxo_mensal(wb, meses, ultima_linha_dados):
     ws.add_chart(chart1, "G4")
 
     # Gráfico 2: Saldo acumulado (série única -> sem legenda, linha)
-    chart2 = LineChart()
+    chart2 = eixos_visiveis(LineChart())
     chart2.title = "Saldo Acumulado"
     chart2.style = 10
     chart2.y_axis.title = "R$"
@@ -362,7 +374,7 @@ def montar_dre(wb, ultima_linha_dados):
     ws.column_dimensions["A"].width = 26
     ws.column_dimensions["B"].width = 18
 
-    chart = BarChart()
+    chart = eixos_visiveis(BarChart())
     chart.type = "bar"
     chart.title = "Despesas por Categoria"
     chart.style = 10
@@ -410,7 +422,7 @@ def montar_resumo(wb, meses, linha_total_fluxo, linha_resultado_dre):
 
     ws.cell(row=10, column=1, value="Fluxo de caixa mensal").font = Font(bold=True, size=11, color=INK)
 
-    chart = BarChart()
+    chart = eixos_visiveis(BarChart())
     chart.type = "col"
     chart.grouping = "clustered"
     chart.title = None
@@ -461,6 +473,16 @@ def main():
     wb["Resumo"].sheet_view.showGridLines = False
     for nome in ["Fluxo Mensal", "Contas a Pagar e Receber", "DRE"]:
         wb[nome].sheet_view.showGridLines = False
+
+    # Impressão: cada aba cabe na largura de uma folha A4 deitada (sem isso,
+    # tabelas e gráficos saíam cortados entre páginas).
+    for ws in wb.worksheets:
+        ws.page_setup.paperSize = ws.PAPERSIZE_A4
+        ws.page_setup.orientation = "landscape"
+        ws.sheet_properties.pageSetUpPr.fitToPage = True
+        ws.page_setup.fitToWidth = 1
+        ws.page_setup.fitToHeight = 0
+    wb["Dados"].print_title_rows = "1:1"
 
     wb.active = 0
     wb.save(xlsx_saida)
