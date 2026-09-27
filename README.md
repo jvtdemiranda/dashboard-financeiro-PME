@@ -248,6 +248,20 @@ Vale registrar porque são evidência de depuração real, não só "rodou sem e
    revisão, os eixos dos gráficos passaram a ser marcados como visíveis:
    o openpyxl 3.1 não grava essa marcação, e há relatos de versões
    recentes do Excel escondendo o eixo sem ela.
+9. **Planilha aparecia vazia no celular.** Depois de colocar o botão de
+   download no painel, a planilha abriu **vazia** num visualizador de
+   celular. Causa: o openpyxl grava as fórmulas (`SUMIFS`, `SUM`...) mas
+   não o resultado delas — o Excel do computador calcula ao abrir, mas
+   visualizadores que não calculam (celular, prévias online) mostram só o
+   que está gravado. As 54 células com fórmula saíam em branco, e os
+   gráficos também (cada gráfico guarda uma cópia dos dados, que também
+   não era gravada). Agora cada fórmula leva junto o resultado, calculado
+   em Python com a mesma regra, e cada gráfico leva a cópia dos dados; a
+   planilha continua com fórmulas editáveis. Pra garantir que o cálculo
+   em Python e a fórmula concordam, os 54 resultados foram comparados com
+   o LibreOffice recalculando a planilha do zero: nenhuma diferença. E se
+   alguma fórmula ficar sem resultado, a geração falha em vez de publicar
+   uma planilha vazia.
 
 ## Stack
 

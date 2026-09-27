@@ -28,7 +28,9 @@ from openpyxl.chart import BarChart, LineChart, Reference
 from openpyxl.chart.marker import Marker
 from openpyxl.formatting.rule import CellIsRule
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.chart.data_source import AxDataSource, NumData, NumRef, NumVal, StrData, StrRef, StrVal
 from openpyxl.utils import get_column_letter
+from openpyxl.utils.cell import range_to_tuple
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
 # --- Paleta (dataviz skill: categórico fixo, status reservado) ---
@@ -65,6 +67,61 @@ def caminhos():
     os.makedirs(pasta_dashboard, exist_ok=True)
     xlsx_saida = os.path.join(pasta_dashboard, "dashboard_financeiro.xlsx")
     return csv_tratado, xlsx_saida
+
+
+# Resultado de cada fórmula, calculado aqui em Python com a mesma regra da
+# fórmula: {(aba, "B5"): 1234.5}. O openpyxl grava a fórmula sem o resultado,
+# e visualizadores que não calculam (celular, prévias online) mostrariam as
+# células vazias. salvar_deterministico() grava esses resultados no arquivo.
+RESULTADOS = {}
+
+
+def formula(ws, row, col, expr, resultado):
+    c = ws.cell(row=row, column=col, value=expr)
+    RESULTADOS[(ws.title, c.coordinate)] = float(resultado)
+    return c
+
+
+def _valores(wb, ref):
+    """Valores das células de uma referência de gráfico, usando o resultado das fórmulas."""
+    if ":" not in ref.split("!")[-1]:
+        ref = f"{ref}:{ref.split('!')[-1]}"
+    aba, (c1, l1, c2, l2) = range_to_tuple(ref)
+    ws = wb[aba]
+    saida = []
+    for linha in range(l1, l2 + 1):
+        for coluna in range(c1, c2 + 1):
+            celula = ws.cell(row=linha, column=coluna)
+            saida.append(RESULTADOS.get((aba, celula.coordinate), celula.value))
+    return saida, ws.cell(row=l1, column=c1).number_format
+
+
+def preencher_caches(wb):
+    """
+    Grava dentro de cada gráfico uma cópia dos dados que ele desenha (é o que
+    o Excel faz ao salvar). O openpyxl grava só a referência às células, e
+    visualizadores que não calculam mostrariam o gráfico em branco.
+    """
+    for ws in wb.worksheets:
+        for grafico in ws._charts:
+            for serie in grafico.series:
+                valores, fmt = _valores(wb, serie.val.numRef.f)
+                serie.val.numRef.numCache = NumData(
+                    formatCode=fmt, ptCount=len(valores),
+                    pt=[NumVal(idx=i, v=float(v)) for i, v in enumerate(valores) if v is not None])
+                if serie.tx is not None and serie.tx.strRef is not None:
+                    nome, _ = _valores(wb, serie.tx.strRef.f)
+                    serie.tx.strRef.strCache = StrData(ptCount=1, pt=[StrVal(idx=0, v=str(nome[0]))])
+                if serie.cat is not None:
+                    ref = serie.cat.numRef.f if serie.cat.numRef is not None else serie.cat.strRef.f
+                    rotulos, fmt = _valores(wb, ref)
+                    if all(isinstance(r, datetime) for r in rotulos):
+                        serie.cat = AxDataSource(numRef=NumRef(f=ref, numCache=NumData(
+                            formatCode=fmt, ptCount=len(rotulos),
+                            pt=[NumVal(idx=i, v=float((r - datetime(1899, 12, 30)).days)) for i, r in enumerate(rotulos)])))
+                    else:
+                        serie.cat = AxDataSource(strRef=StrRef(f=ref, strCache=StrData(
+                            ptCount=len(rotulos), pt=[StrVal(idx=i, v=str(r).strip()) for i, r in enumerate(rotulos)])))
 
 
 def eixos_visiveis(chart):
@@ -158,7 +215,7 @@ def montar_dados(wb, df):
     return ws, n
 
 
-def montar_fluxo_mensal(wb, meses, ultima_linha_dados):
+def montar_fluxo_mensal(wb, df, meses, ultima_linha_dados):
     ws = wb.create_sheet("Fluxo Mensal")
     titulo_pagina(ws, "Fluxo de Caixa Mensal",
                   f"Período: {meses[0].strftime('%b/%Y')} a {meses[-1].strftime('%b/%Y')} "
@@ -172,26 +229,33 @@ def montar_fluxo_mensal(wb, meses, ultima_linha_dados):
 
     primeira_linha = 5
     u = ultima_linha_dados
+    pagos = df[df["status"] == "Pago"]
+    acumulado = 0.0
+    totais = {"B": 0.0, "C": 0.0, "D": 0.0}
     for i, mes in enumerate(meses):
         r = primeira_linha + i
         ws.cell(row=r, column=1, value=mes).number_format = MONTH_FMT
+        no_mes = pagos[(pagos["data"] >= mes) & (pagos["data"] < mes + pd.DateOffset(months=1))]
+        valores = {}
         for col, tipo in [(2, "Entrada"), (3, "Saída")]:
-            ws.cell(row=r, column=col,
-                    value=(f'=SUMIFS(Dados!$E$2:$E${u},Dados!$D$2:$D${u},"{tipo}",Dados!$F$2:$F${u},"Pago",'
-                           f'Dados!$A$2:$A${u},">="&A{r},Dados!$A$2:$A${u},"<"&EDATE(A{r},1))')
-                    ).number_format = CUR_FMT
-        ws.cell(row=r, column=4, value=f"=B{r}-C{r}").number_format = CUR_FMT
-        if i == 0:
-            ws.cell(row=r, column=5, value=f"=D{r}").number_format = CUR_FMT
-        else:
-            ws.cell(row=r, column=5, value=f"=E{r - 1}+D{r}").number_format = CUR_FMT
+            valores[col] = no_mes.loc[no_mes["tipo"] == tipo, "valor"].sum()
+            formula(ws, r, col,
+                    f'=SUMIFS(Dados!$E$2:$E${u},Dados!$D$2:$D${u},"{tipo}",Dados!$F$2:$F${u},"Pago",'
+                    f'Dados!$A$2:$A${u},">="&A{r},Dados!$A$2:$A${u},"<"&EDATE(A{r},1))',
+                    valores[col]).number_format = CUR_FMT
+        saldo = valores[2] - valores[3]
+        acumulado += saldo
+        formula(ws, r, 4, f"=B{r}-C{r}", saldo).number_format = CUR_FMT
+        formula(ws, r, 5, f"=D{r}" if i == 0 else f"=E{r - 1}+D{r}", acumulado).number_format = CUR_FMT
+        totais["B"] += valores[2]
+        totais["C"] += valores[3]
+        totais["D"] += saldo
 
     ultima_linha = primeira_linha + len(meses) - 1
     linha_total = ultima_linha + 1
     ws.cell(row=linha_total, column=1, value="Total").font = Font(bold=True)
     for col, letra in [(2, "B"), (3, "C"), (4, "D")]:
-        cell = ws.cell(row=linha_total, column=col,
-                        value=f"=SUM({letra}{primeira_linha}:{letra}{ultima_linha})")
+        cell = formula(ws, linha_total, col, f"=SUM({letra}{primeira_linha}:{letra}{ultima_linha})", totais[letra])
         cell.font = Font(bold=True)
         cell.number_format = CUR_FMT
     for col in range(1, 6):
@@ -262,18 +326,22 @@ def montar_contas(wb, df, ultima_linha_dados):
 
     ws.cell(row=5, column=1, value="A Receber (Entradas)")
     ws.cell(row=6, column=1, value="A Pagar (Saídas)")
+    em_aberto = {}
     for r, tipo in [(5, "Entrada"), (6, "Saída")]:
+        soma = 0.0
         for c, status in [(2, "Pendente"), (3, "Atrasado")]:
-            col_letra = get_column_letter(c)
-            ws.cell(row=r, column=c,
-                    value=(f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"{tipo}",'
-                           f'Dados!$F$2:$F${ultima_linha_dados},"{status}")')
-                    ).number_format = CUR_FMT
-        ws.cell(row=r, column=4, value=f"=B{r}+C{r}").number_format = CUR_FMT
+            valor = df.loc[(df["tipo"] == tipo) & (df["status"] == status), "valor"].sum()
+            soma += valor
+            formula(ws, r, c,
+                    f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"{tipo}",'
+                    f'Dados!$F$2:$F${ultima_linha_dados},"{status}")',
+                    valor).number_format = CUR_FMT
+        em_aberto[r] = soma
+        formula(ws, r, 4, f"=B{r}+C{r}", soma).number_format = CUR_FMT
         ws.cell(row=r, column=4).font = Font(bold=True)
 
     ws.cell(row=7, column=1, value="Saldo em Aberto (Receber − Pagar)").font = Font(bold=True)
-    saldo_cell = ws.cell(row=7, column=4, value="=D5-D6")
+    saldo_cell = formula(ws, 7, 4, "=D5-D6", em_aberto[5] - em_aberto[6])
     saldo_cell.font = Font(bold=True)
     saldo_cell.number_format = CUR_FMT
     ws.conditional_formatting.add(
@@ -329,31 +397,35 @@ def montar_contas(wb, df, ultima_linha_dados):
     return ws
 
 
-def montar_dre(wb, ultima_linha_dados):
+def montar_dre(wb, df, ultima_linha_dados):
     ws = wb.create_sheet("DRE")
     titulo_pagina(ws, "DRE Simplificado",
                   "Demonstrativo de Resultado — regime de competência (todas as transações lançadas, pagas ou não)", 5)
 
     ws.cell(row=4, column=1, value="Receita Bruta (Entradas)").font = Font(bold=True)
-    receita_cell = ws.cell(row=4, column=2, value=f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Entrada")')
+    receita = df.loc[df["tipo"] == "Entrada", "valor"].sum()
+    receita_cell = formula(ws, 4, 2, f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Entrada")', receita)
     receita_cell.font = Font(bold=True, color=BLUE)
     receita_cell.number_format = CUR_FMT
 
     ws.cell(row=5, column=1, value="Despesas Operacionais").font = Font(bold=True, color=INK_SEC)
 
     primeira = 6
+    total_despesas = 0.0
     for i, categoria in enumerate(CATEGORIAS_DESPESA):
         r = primeira + i
         ws.cell(row=r, column=1, value=f"   {categoria}")
-        ws.cell(row=r, column=2,
-                value=(f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Saída",'
-                       f'Dados!$C$2:$C${ultima_linha_dados},"{categoria}")')
-                ).number_format = CUR_FMT
+        valor = df.loc[(df["tipo"] == "Saída") & (df["categoria"] == categoria), "valor"].sum()
+        total_despesas += valor
+        formula(ws, r, 2,
+                f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Saída",'
+                f'Dados!$C$2:$C${ultima_linha_dados},"{categoria}")',
+                valor).number_format = CUR_FMT
     ultima = primeira + len(CATEGORIAS_DESPESA) - 1
 
     linha_total_desp = ultima + 1
     ws.cell(row=linha_total_desp, column=1, value="Total de Despesas").font = Font(bold=True)
-    total_desp_cell = ws.cell(row=linha_total_desp, column=2, value=f"=SUM(B{primeira}:B{ultima})")
+    total_desp_cell = formula(ws, linha_total_desp, 2, f"=SUM(B{primeira}:B{ultima})", total_despesas)
     total_desp_cell.font = Font(bold=True, color=RED)
     total_desp_cell.number_format = CUR_FMT
     for col in (1, 2):
@@ -361,7 +433,8 @@ def montar_dre(wb, ultima_linha_dados):
 
     linha_resultado = linha_total_desp + 2
     ws.cell(row=linha_resultado, column=1, value="Resultado Líquido").font = Font(bold=True, size=12)
-    resultado_cell = ws.cell(row=linha_resultado, column=2, value=f"=B4-B{linha_total_desp}")
+    resultado = receita - total_despesas
+    resultado_cell = formula(ws, linha_resultado, 2, f"=B4-B{linha_total_desp}", resultado)
     resultado_cell.font = Font(bold=True, size=12)
     resultado_cell.number_format = CUR_FMT
     ref = f"B{linha_resultado}"
@@ -372,7 +445,7 @@ def montar_dre(wb, ultima_linha_dados):
 
     linha_margem = linha_resultado + 1
     ws.cell(row=linha_margem, column=1, value="Margem Líquida").font = Font(italic=True, color=INK_SEC)
-    margem_cell = ws.cell(row=linha_margem, column=2, value=f"=B{linha_resultado}/B4")
+    margem_cell = formula(ws, linha_margem, 2, f"=B{linha_resultado}/B4", resultado / receita if receita else 0.0)
     margem_cell.number_format = PCT_FMT
     margem_cell.font = Font(italic=True, color=INK_SEC)
 
@@ -404,12 +477,13 @@ def montar_resumo(wb, meses, linha_total_fluxo, linha_resultado_dre):
                   f"Período: {meses[0].strftime('%b/%Y')} a {meses[-1].strftime('%b/%Y')} "
                   "· dados tratados a partir de um export bruto simulado (ver README)", 9)
 
-    def tile(row_label, row_value, col1, col2, titulo, formula, cor_valor, fmt=CUR_FMT):
+    def tile(row_label, row_value, col1, col2, titulo, aba, celula, cor_valor, fmt=CUR_FMT):
         ws.merge_cells(start_row=row_label, start_column=col1, end_row=row_label, end_column=col2)
         lbl = ws.cell(row=row_label, column=col1, value=titulo)
         lbl.font = Font(size=9, color=INK_SEC)
         ws.merge_cells(start_row=row_value, start_column=col1, end_row=row_value, end_column=col2)
-        val = ws.cell(row=row_value, column=col1, value=formula)
+        ref = f"'{aba}'!{celula}" if " " in aba else f"{aba}!{celula}"
+        val = formula(ws, row_value, col1, "=" + ref, RESULTADOS[(aba, celula)])
         val.font = Font(size=18, bold=True, color=cor_valor)
         val.number_format = fmt
         fill_block(ws, row_label, col1, row_value, col2, SURFACE)
@@ -417,13 +491,13 @@ def montar_resumo(wb, meses, linha_total_fluxo, linha_resultado_dre):
         ws.row_dimensions[row_label].height = 16
         ws.row_dimensions[row_value].height = 28
 
-    tile(4, 5, 1, 3, "RECEBIDO (CAIXA)", "='Fluxo Mensal'!B" + str(linha_total_fluxo), BLUE)
-    tile(4, 5, 4, 6, "PAGO (CAIXA)", "='Fluxo Mensal'!C" + str(linha_total_fluxo), RED)
-    tile(4, 5, 7, 9, "SALDO DE CAIXA", "='Fluxo Mensal'!D" + str(linha_total_fluxo), INK)
+    tile(4, 5, 1, 3, "RECEBIDO (CAIXA)", "Fluxo Mensal", f"B{linha_total_fluxo}", BLUE)
+    tile(4, 5, 4, 6, "PAGO (CAIXA)", "Fluxo Mensal", f"C{linha_total_fluxo}", RED)
+    tile(4, 5, 7, 9, "SALDO DE CAIXA", "Fluxo Mensal", f"D{linha_total_fluxo}", INK)
 
-    tile(7, 8, 1, 3, "CONTAS A RECEBER (EM ABERTO)", "='Contas a Pagar e Receber'!D5", BLUE)
-    tile(7, 8, 4, 6, "CONTAS A PAGAR (EM ABERTO)", "='Contas a Pagar e Receber'!D6", RED)
-    tile(7, 8, 7, 9, "RESULTADO LÍQUIDO (DRE)", f"=DRE!B{linha_resultado_dre}", INK)
+    tile(7, 8, 1, 3, "CONTAS A RECEBER (EM ABERTO)", "Contas a Pagar e Receber", "D5", BLUE)
+    tile(7, 8, 4, 6, "CONTAS A PAGAR (EM ABERTO)", "Contas a Pagar e Receber", "D6", RED)
+    tile(7, 8, 7, 9, "RESULTADO LÍQUIDO (DRE)", "DRE", f"B{linha_resultado_dre}", INK)
 
     ws.cell(row=10, column=1, value="Fluxo de caixa mensal").font = Font(bold=True, size=11, color=INK)
 
@@ -465,16 +539,33 @@ def salvar_deterministico(wb, caminho):
     publicada em public/ está em dia com os dados.
     """
     wb.properties.created = wb.properties.modified = datetime(2026, 1, 1)
+    # O Excel recalcula tudo ao abrir; os resultados gravados abaixo servem
+    # pra quem abre num visualizador que não calcula fórmulas.
+    wb.calculation.fullCalcOnLoad = True
+    arquivo_da_aba = {f"xl/worksheets/sheet{i}.xml": ws.title for i, ws in enumerate(wb.worksheets, start=1)}
+    gravados = 0
     buffer = io.BytesIO()
     wb.save(buffer)
     with zipfile.ZipFile(buffer) as origem, zipfile.ZipFile(caminho, "w", zipfile.ZIP_DEFLATED) as destino:
         for item in origem.infolist():
             conteudo = origem.read(item.filename)
+            aba = arquivo_da_aba.get(item.filename)
+            if aba:
+                for (nome, celula), valor in RESULTADOS.items():
+                    if nome != aba:
+                        continue
+                    conteudo, n = re.subn(
+                        rb'(<c r="' + celula.encode() + rb'"[^>]*>)(<f>.*?</f>)(?:<v\s*/>|<v></v>)',
+                        rb"\g<1>\g<2><v>" + repr(round(valor, 10)).encode() + b"</v>", conteudo)
+                    gravados += n
             if item.filename == "docProps/core.xml":
                 conteudo = re.sub(rb"(<dcterms:modified[^>]*>)[^<]*", rb"\g<1>2026-01-01T00:00:00Z", conteudo)
             info = zipfile.ZipInfo(item.filename, date_time=(2026, 1, 1, 0, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED
             destino.writestr(info, conteudo)
+    if gravados != len(RESULTADOS):
+        raise RuntimeError(f"{len(RESULTADOS) - gravados} fórmula(s) ficaram sem resultado gravado — "
+                           "a planilha apareceria vazia em visualizadores que não calculam")
 
 
 def main():
@@ -490,9 +581,9 @@ def main():
 
     _, n_linhas = montar_dados(wb, df)
     ultima_linha_dados = n_linhas + 1
-    _, primeira_linha, ultima_linha, linha_total_fluxo = montar_fluxo_mensal(wb, meses, ultima_linha_dados)
+    _, primeira_linha, ultima_linha, linha_total_fluxo = montar_fluxo_mensal(wb, df, meses, ultima_linha_dados)
     montar_contas(wb, df, ultima_linha_dados)
-    _, linha_resultado_dre = montar_dre(wb, ultima_linha_dados)
+    _, linha_resultado_dre = montar_dre(wb, df, ultima_linha_dados)
     montar_resumo(wb, meses, linha_total_fluxo, linha_resultado_dre)
 
     wb["Resumo"].sheet_view.showGridLines = False
@@ -510,6 +601,7 @@ def main():
     wb["Dados"].print_title_rows = "1:1"
 
     wb.active = 0
+    preencher_caches(wb)
     salvar_deterministico(wb, xlsx_saida)
     # Cópia em public/ pro botão "Baixar planilha" do painel publicado.
     publico = os.path.join(os.path.dirname(xlsx_saida), "..", "public", "dashboard_financeiro.xlsx")
