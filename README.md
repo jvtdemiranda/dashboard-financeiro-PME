@@ -238,6 +238,14 @@ Vale registrar porque são evidência de depuração real, não só "rodou sem e
    duas camadas do [painel de criptomoedas](https://github.com/jvtdemiranda/dashboard-criptomoedas-api)
    (`escapeHtml()` no JS + escape de `<` no JSON), e testado com um
    payload real antes e depois.
+8. **Planilha pouco preparada pra impressão e gráficos com risco de
+   aparecer sem eixos.** Achado ao renderizar o Excel como ele sai
+   impresso: as abas eram cortadas entre páginas (o resumo saía partido
+   em duas folhas). Agora cada aba cabe na largura de uma folha A4 deitada
+   e a tabela de dados repete o cabeçalho em cada página. Na mesma
+   revisão, os eixos dos gráficos passaram a ser marcados como visíveis:
+   o openpyxl 3.1 não grava essa marcação, e há relatos de versões
+   recentes do Excel escondendo o eixo sem ela.
 
 ## Stack
 
