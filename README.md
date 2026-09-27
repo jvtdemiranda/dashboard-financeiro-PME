@@ -47,8 +47,9 @@ que ele realmente chega de um sistema real.
 │   └── dashboard_template.html -> esqueleto HTML/CSS/JS usado pelo script acima
 ├── dashboard/
 │   └── dashboard_financeiro.xlsx -> dashboard gerencial (Resumo, Fluxo Mensal, Contas a Pagar/Receber, DRE)
-└── public/
-    └── index.html      -> versão HTML (mobile) do dashboard — é o que o Vercel publica (Root Directory = public)
+└── public/             -> o que o Vercel publica (Root Directory = public)
+    ├── index.html                -> versão HTML (mobile) do dashboard
+    └── dashboard_financeiro.xlsx -> cópia da planilha, pro botão "Excel" do painel
 ```
 
 ## O cenário simulado
@@ -113,7 +114,8 @@ Linhas na base final tratada:       200
 ## O dashboard (Excel)
 
 Gerado por `scripts/gerar_dashboard.py` a partir de `transacoes_tratadas.csv`,
-em `dashboard/dashboard_financeiro.xlsx`, com 5 abas:
+em `dashboard/dashboard_financeiro.xlsx` — e dá pra baixar direto do painel
+publicado, pelo botão **Excel** no topo da página. Tem 5 abas:
 
 - **Resumo** — capa com KPIs (recebido, pago, saldo de caixa, contas a
   receber/pagar em aberto, resultado líquido) e o gráfico de fluxo de caixa

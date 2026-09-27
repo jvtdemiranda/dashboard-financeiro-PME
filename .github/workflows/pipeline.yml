@@ -4,7 +4,8 @@ name: Pipeline
 #
 # 1. "public/ está em dia": reconstrói o dashboard (Excel/HTML) a partir do
 #    CSV já tratado que está commitado, e falha se der diferente do que
-#    está commitado em public/index.html. Não toca em gerar_dados.py/
+#    está commitado em public/ (página e planilha — a planilha é gerada
+#    com datas fixas justamente pra ser comparável). Não toca em gerar_dados.py/
 #    tratar_dados.py de propósito: como as datas são uma janela rolante
 #    relativa a "hoje", regenerar a base do zero nunca bate byte a byte
 #    com o que foi commitado num dia diferente — isso deixaria esse check
@@ -24,7 +25,7 @@ permissions:
 
 jobs:
   public-atualizado:
-    name: public/index.html está em dia com o CSV commitado
+    name: public/ (página e planilha) está em dia com o CSV commitado
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,7 +46,7 @@ jobs:
         run: |
           set -e
           if ! git diff --quiet -- public; then
-            echo "::error::public/index.html está desatualizado. Rode 'python scripts/gerar_dashboard_html.py' localmente e comite o resultado."
+            echo "::error::public/ está desatualizado. Rode 'python scripts/gerar_dashboard.py' e 'python scripts/gerar_dashboard_html.py' localmente e comite o resultado."
             git diff --stat -- public
             exit 1
           fi
