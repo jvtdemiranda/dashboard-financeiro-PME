@@ -15,7 +15,12 @@ roda; para atualizá-las depois de uma mudança na base, é só rodar o script
 de novo (mesma lógica de reprodutibilidade dos outros dois scripts).
 """
 
+import io
 import os
+import re
+import shutil
+import zipfile
+from datetime import datetime
 
 import pandas as pd
 from openpyxl import Workbook
@@ -452,6 +457,26 @@ def montar_resumo(wb, meses, linha_total_fluxo, linha_resultado_dre):
     ws.merge_cells(start_row=28, start_column=1, end_row=28, end_column=9)
 
 
+def salvar_deterministico(wb, caminho):
+    """
+    Mesmos dados -> arquivo idêntico, byte a byte. O openpyxl carimba a
+    hora atual em cada arquivo interno do .xlsx (um zip) e na data de
+    "modificado"; fixar essas datas permite que o CI confira se a cópia
+    publicada em public/ está em dia com os dados.
+    """
+    wb.properties.created = wb.properties.modified = datetime(2026, 1, 1)
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    with zipfile.ZipFile(buffer) as origem, zipfile.ZipFile(caminho, "w", zipfile.ZIP_DEFLATED) as destino:
+        for item in origem.infolist():
+            conteudo = origem.read(item.filename)
+            if item.filename == "docProps/core.xml":
+                conteudo = re.sub(rb"(<dcterms:modified[^>]*>)[^<]*", rb"\g<1>2026-01-01T00:00:00Z", conteudo)
+            info = zipfile.ZipInfo(item.filename, date_time=(2026, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            destino.writestr(info, conteudo)
+
+
 def main():
     csv_tratado, xlsx_saida = caminhos()
     df = pd.read_csv(csv_tratado, parse_dates=["data"])
@@ -485,7 +510,10 @@ def main():
     wb["Dados"].print_title_rows = "1:1"
 
     wb.active = 0
-    wb.save(xlsx_saida)
+    salvar_deterministico(wb, xlsx_saida)
+    # Cópia em public/ pro botão "Baixar planilha" do painel publicado.
+    publico = os.path.join(os.path.dirname(xlsx_saida), "..", "public", "dashboard_financeiro.xlsx")
+    shutil.copyfile(xlsx_saida, publico)
     print(f"Dashboard gerado com sucesso: {xlsx_saida}")
     print(f"Linhas de dados: {n_linhas} | Meses no fluxo de caixa: {len(meses)}")
 
