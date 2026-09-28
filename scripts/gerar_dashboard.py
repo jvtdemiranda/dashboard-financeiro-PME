@@ -31,33 +31,56 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.chart.data_source import AxDataSource, NumData, NumRef, NumVal, StrData, StrRef, StrVal
 from openpyxl.utils import get_column_letter
 from openpyxl.utils.cell import range_to_tuple
-from openpyxl.worksheet.table import Table, TableStyleInfo
 
-# --- Paleta (dataviz skill: categórico fixo, status reservado) ---
+# --- Paleta: a mesma do painel publicado (dashboard_template.html) ---
 BLUE = "2A78D6"        # Entradas / receita
 RED = "E34948"         # Saídas / despesa
-GOOD = "0CA30C"        # status: positivo
-WARNING = "FAB219"     # status: pendente
+WARNING = "C87E00"     # status: pendente (texto; o amarelo claro some no fundo branco)
+WARNING_BG = "FEF3DD"
 CRITICAL = "D03B3B"    # status: atrasado
+CRITICAL_BG = "FCEBEA"
+SUCCESS_TEXT = "006300"  # status: pago / saldo positivo
+SUCCESS_BG = "E6F4E6"
 INK = "0B0B0B"
 INK_SEC = "52514E"
 INK_MUTED = "898781"
 GRID = "E1E0D9"
 SURFACE = "FCFCFB"
-PAGE = "F9F9F7"
-SUCCESS_TEXT = "006300"
+SURFACE_2 = "F2F1EC"
 WHITE = "FFFFFF"
+
+# Uma fonte só, em toda célula. Célula com Font() sem nome fica com a
+# fonte padrão de cada programa (no LibreOffice, uma serifada) — era isso
+# que misturava fontes na planilha.
+FONTE = "Arial"
 
 CUR_FMT = '"R$" #,##0.00'
 DATE_FMT = "dd/mm/yyyy"
 MONTH_FMT = "mmm/yyyy"
 PCT_FMT = "0.0%"
+MESES_PT = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 
 CATEGORIAS_DESPESA = [
     "Aluguel", "Fornecedor", "Imposto", "Manutenção", "Marketing", "Salário",
 ]
 
 THIN = Side(style="thin", color=GRID)
+
+# Aba "Dados": coluna A é margem; título nas linhas 1-2, cabeçalho na 4,
+# transações a partir da 5. Todas as fórmulas das outras abas apontam
+# para estas colunas.
+COL_DADOS = {"data": "B", "descricao": "C", "categoria": "D", "tipo": "E", "valor": "F", "status": "G"}
+CAB_DADOS = 4
+PRIMEIRA_DADOS = CAB_DADOS + 1
+
+
+def faixa_dados(campo, ultima):
+    letra = COL_DADOS[campo]
+    return f"Dados!${letra}${PRIMEIRA_DADOS}:${letra}${ultima}"
+
+
+def mes_pt(data):
+    return f"{MESES_PT[data.month - 1]}/{data.year}"
 
 
 def caminhos():
@@ -136,167 +159,190 @@ def eixos_visiveis(chart):
     return chart
 
 
-def draw_box(ws, r1, c1, r2, c2, color=GRID):
-    """Desenha só o contorno externo de um retângulo de células (sem linhas internas)."""
-    for col in range(c1, c2 + 1):
-        top = ws.cell(row=r1, column=col)
-        top.border = Border(top=Side(style="thin", color=color),
-                             left=top.border.left, right=top.border.right, bottom=top.border.bottom)
-        bot = ws.cell(row=r2, column=col)
-        bot.border = Border(bottom=Side(style="thin", color=color),
-                             left=bot.border.left, right=bot.border.right, top=bot.border.top)
-    for row in range(r1, r2 + 1):
-        left = ws.cell(row=row, column=c1)
-        left.border = Border(left=Side(style="thin", color=color),
-                              top=left.border.top, bottom=left.border.bottom, right=left.border.right)
-        right = ws.cell(row=row, column=c2)
-        right.border = Border(right=Side(style="thin", color=color),
-                               top=right.border.top, bottom=right.border.bottom, left=right.border.left)
+def estilo(c, tam=10, negrito=False, italico=False, cor=INK, fmt=None, alinhar=None, fundo=None,
+           linha=True, recuo=0, quebra=False):
+    """Aplica o estilo da planilha a uma célula: fonte única, fio fino embaixo, recuo."""
+    c.font = Font(name=FONTE, size=tam, bold=negrito, italic=italico, color=cor)
+    if fmt:
+        c.number_format = fmt
+    c.alignment = Alignment(horizontal=alinhar, vertical="center", indent=recuo, wrap_text=quebra)
+    if fundo:
+        c.fill = PatternFill(start_color=fundo, end_color=fundo, fill_type="solid")
+    c.border = Border(bottom=THIN) if linha else Border()
+    return c
 
 
-def fill_block(ws, r1, c1, r2, c2, color):
-    fill = PatternFill(start_color=color, end_color=color, fill_type="solid")
-    for row in range(r1, r2 + 1):
-        for col in range(c1, c2 + 1):
-            ws.cell(row=row, column=col).fill = fill
+def texto(ws, r, col, valor, **kw):
+    """Texto vindo dos dados é sempre texto: nunca vira fórmula, mesmo começando com "="."""
+    c = ws.cell(row=r, column=col, value=None if valor is None else str(valor))
+    c.data_type = "s"
+    return estilo(c, **kw)
 
 
-def titulo_pagina(ws, texto, subtitulo, ultima_coluna):
-    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=ultima_coluna)
-    c = ws.cell(row=1, column=1, value=texto)
-    c.font = Font(name="Calibri", size=18, bold=True, color=INK)
-    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=ultima_coluna)
-    s = ws.cell(row=2, column=1, value=subtitulo)
-    s.font = Font(name="Calibri", size=10, italic=True, color=INK_SEC)
-    ws.row_dimensions[1].height = 26
-    fill_block(ws, 1, 1, 2, ultima_coluna, PAGE)
+def larguras(ws, valores):
+    """Coluna A é sempre uma margem estreita; `valores` começam na coluna B."""
+    ws.column_dimensions["A"].width = 2
+    for j, w in enumerate(valores, start=2):
+        ws.column_dimensions[get_column_letter(j)].width = w
 
 
-def header_row(ws, row, first_col, last_col, fill_color=BLUE):
-    fill = PatternFill(start_color=fill_color, end_color=fill_color, fill_type="solid")
-    for col in range(first_col, last_col + 1):
-        cell = ws.cell(row=row, column=col)
+def titulo_pagina(ws, texto_titulo, subtitulo):
+    ws.cell(row=1, column=2, value=texto_titulo).font = Font(name=FONTE, size=17, bold=True, color=INK)
+    ws.cell(row=2, column=2, value=subtitulo).font = Font(name=FONTE, size=10, italic=True, color=INK_SEC)
+    ws.row_dimensions[1].height = 28
+    ws.row_dimensions[2].height = 18
+    ws.row_dimensions[3].height = 10
+    ws.sheet_view.showGridLines = False
+
+
+def secao(ws, r, nome, col1, col2):
+    """Título de seção com um traço embaixo, cobrindo as colunas da tabela."""
+    for col in range(col1, col2 + 1):
+        ws.cell(row=r, column=col).border = Border(bottom=Side(style="medium", color=INK))
+    ws.cell(row=r, column=col1, value=nome).font = Font(name=FONTE, size=12, bold=True, color=INK)
+    ws.row_dimensions[r].height = 22
+
+
+def header_row(ws, row, nomes, col_inicial=2, numericas=(), centro=()):
+    """Cabeçalho escuro; colunas de valor alinhadas à direita, como os números."""
+    fill = PatternFill(start_color=INK, end_color=INK, fill_type="solid")
+    for j, nome in enumerate(nomes):
+        cell = ws.cell(row=row, column=col_inicial + j, value=nome)
         cell.fill = fill
-        cell.font = Font(name="Calibri", size=10, bold=True, color=WHITE)
-        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.font = Font(name=FONTE, size=10, bold=True, color=WHITE)
+        alinhar = "right" if j in numericas else "center" if j in centro else "left"
+        cell.alignment = Alignment(horizontal=alinhar, vertical="center", indent=1 if alinhar == "left" else 0)
+    ws.row_dimensions[row].height = 26
 
 
-def tabela_excel(ws, nome, ref, estilo="TableStyleMedium9"):
-    tbl = Table(displayName=nome, ref=ref)
-    tbl.tableStyleInfo = TableStyleInfo(
-        name=estilo, showFirstColumn=False, showLastColumn=False,
-        showRowStripes=True, showColumnStripes=False,
-    )
-    ws.add_table(tbl)
+def cores_de_status(ws, faixa):
+    """
+    Status como "etiqueta" colorida, igual ao painel: Pago verde, Pendente
+    âmbar, Atrasado vermelho. Por formatação condicional, para a cor seguir
+    o valor se alguém editar o status na planilha.
+    """
+    for valor, cor, fundo in [("Pago", SUCCESS_TEXT, SUCCESS_BG), ("Pendente", WARNING, WARNING_BG),
+                              ("Atrasado", CRITICAL, CRITICAL_BG)]:
+        ws.conditional_formatting.add(faixa, CellIsRule(
+            operator="equal", formula=[f'"{valor}"'],
+            font=Font(name=FONTE, bold=True, color=cor),
+            fill=PatternFill(start_color=fundo, end_color=fundo, fill_type="solid")))
+
+
+def cores_de_saldo(ws, faixa, negrito=False, tam=10):
+    ws.conditional_formatting.add(faixa, CellIsRule(
+        operator="lessThan", formula=["0"], font=Font(name=FONTE, bold=negrito, size=tam, color=CRITICAL)))
+    ws.conditional_formatting.add(faixa, CellIsRule(
+        operator="greaterThanOrEqual", formula=["0"], font=Font(name=FONTE, bold=negrito, size=tam, color=SUCCESS_TEXT)))
 
 
 def montar_dados(wb, df):
     ws = wb.create_sheet("Dados")
+    titulo_pagina(ws, "Transações",
+                  f"{len(df)} lançamentos já tratados — a base de todas as fórmulas desta planilha: "
+                  "mude um valor ou um status aqui e os totais das outras abas recalculam.")
     colunas = ["Data", "Descrição", "Categoria", "Tipo", "Valor", "Status"]
-    for j, nome in enumerate(colunas, start=1):
-        ws.cell(row=1, column=j, value=nome)
-    header_row(ws, 1, 1, 6)
+    header_row(ws, CAB_DADOS, colunas, numericas=(4,), centro=(5,))
 
-    for i, row in enumerate(df.itertuples(index=False), start=2):
-        ws.cell(row=i, column=1, value=row.data.to_pydatetime()).number_format = DATE_FMT
-        ws.cell(row=i, column=2, value=row.descricao)
-        ws.cell(row=i, column=3, value=row.categoria)
-        ws.cell(row=i, column=4, value=row.tipo)
-        ws.cell(row=i, column=5, value=float(row.valor)).number_format = CUR_FMT
-        ws.cell(row=i, column=6, value=row.status)
+    for i, row in enumerate(df.itertuples(index=False), start=PRIMEIRA_DADOS):
+        estilo(ws.cell(row=i, column=2, value=row.data.to_pydatetime()), fmt=DATE_FMT, cor=INK_SEC, recuo=1,
+               alinhar="left")
+        texto(ws, i, 3, row.descricao, negrito=True, recuo=1)
+        texto(ws, i, 4, row.categoria, cor=INK_SEC, recuo=1)
+        texto(ws, i, 5, row.tipo, cor=BLUE if row.tipo == "Entrada" else RED, recuo=1)
+        estilo(ws.cell(row=i, column=6, value=float(row.valor)), fmt=CUR_FMT)
+        texto(ws, i, 7, row.status, alinhar="center")
+        ws.row_dimensions[i].height = 18
 
-    n = len(df)
-    tabela_excel(ws, "tbl_dados", f"A1:F{n + 1}")
+    ultima = PRIMEIRA_DADOS + len(df) - 1
+    cores_de_status(ws, f"G{PRIMEIRA_DADOS}:G{ultima}")
+    larguras(ws, [13, 30, 20, 11, 15, 13])
+    ws.freeze_panes = f"A{PRIMEIRA_DADOS}"
+    ws.auto_filter.ref = f"B{CAB_DADOS}:G{ultima}"
+    ws.print_title_rows = f"{CAB_DADOS}:{CAB_DADOS}"
+    return ws, ultima
 
-    larguras = [12, 30, 18, 10, 14, 14]
-    for j, w in enumerate(larguras, start=1):
-        ws.column_dimensions[get_column_letter(j)].width = w
-    ws.freeze_panes = "A2"
-    return ws, n
 
-
-def montar_fluxo_mensal(wb, df, meses, ultima_linha_dados):
+def montar_fluxo_mensal(wb, df, meses, u):
     ws = wb.create_sheet("Fluxo Mensal")
-    titulo_pagina(ws, "Fluxo de Caixa Mensal",
-                  f"Período: {meses[0].strftime('%b/%Y')} a {meses[-1].strftime('%b/%Y')} "
-                  "· regime de caixa: só transações com status Pago (pendentes/atrasadas ficam em Contas a Pagar e Receber)",
-                  5)
+    titulo_pagina(ws, "Fluxo de caixa mensal",
+                  f"{mes_pt(meses[0])} a {mes_pt(meses[-1])} · regime de caixa: só transações com status Pago "
+                  "(pendentes e atrasadas estão em Contas a Pagar e Receber)")
 
-    cabecalhos = ["Mês", "Entradas", "Saídas", "Saldo do Mês", "Saldo Acumulado"]
-    for j, nome in enumerate(cabecalhos, start=1):
-        ws.cell(row=4, column=j, value=nome)
-    header_row(ws, 4, 1, 5)
+    header_row(ws, 4, ["Mês", "Entradas", "Saídas", "Saldo do mês", "Saldo acumulado"], numericas=(1, 2, 3, 4))
 
     primeira_linha = 5
-    u = ultima_linha_dados
     pagos = df[df["status"] == "Pago"]
     acumulado = 0.0
-    totais = {"B": 0.0, "C": 0.0, "D": 0.0}
+    totais = {"C": 0.0, "D": 0.0, "E": 0.0}
+    data, tipo, valor, status = (faixa_dados(c, u) for c in ("data", "tipo", "valor", "status"))
     for i, mes in enumerate(meses):
         r = primeira_linha + i
-        ws.cell(row=r, column=1, value=mes).number_format = MONTH_FMT
+        estilo(ws.cell(row=r, column=2, value=mes), fmt=MONTH_FMT, negrito=True, recuo=1, alinhar="left")
         no_mes = pagos[(pagos["data"] >= mes) & (pagos["data"] < mes + pd.DateOffset(months=1))]
         valores = {}
-        for col, tipo in [(2, "Entrada"), (3, "Saída")]:
-            valores[col] = no_mes.loc[no_mes["tipo"] == tipo, "valor"].sum()
-            formula(ws, r, col,
-                    f'=SUMIFS(Dados!$E$2:$E${u},Dados!$D$2:$D${u},"{tipo}",Dados!$F$2:$F${u},"Pago",'
-                    f'Dados!$A$2:$A${u},">="&A{r},Dados!$A$2:$A${u},"<"&EDATE(A{r},1))',
-                    valores[col]).number_format = CUR_FMT
-        saldo = valores[2] - valores[3]
+        for col, t, cor in [(3, "Entrada", BLUE), (4, "Saída", RED)]:
+            valores[col] = no_mes.loc[no_mes["tipo"] == t, "valor"].sum()
+            estilo(formula(ws, r, col,
+                           f'=SUMIFS({valor},{tipo},"{t}",{status},"Pago",'
+                           f'{data},">="&B{r},{data},"<"&EDATE(B{r},1))',
+                           valores[col]), fmt=CUR_FMT, cor=cor)
+        saldo = valores[3] - valores[4]
         acumulado += saldo
-        formula(ws, r, 4, f"=B{r}-C{r}", saldo).number_format = CUR_FMT
-        formula(ws, r, 5, f"=D{r}" if i == 0 else f"=E{r - 1}+D{r}", acumulado).number_format = CUR_FMT
-        totais["B"] += valores[2]
+        estilo(formula(ws, r, 5, f"=C{r}-D{r}", saldo), fmt=CUR_FMT, negrito=True)
+        estilo(formula(ws, r, 6, f"=E{r}" if i == 0 else f"=F{r - 1}+E{r}", acumulado), fmt=CUR_FMT)
+        ws.row_dimensions[r].height = 20
         totais["C"] += valores[3]
-        totais["D"] += saldo
+        totais["D"] += valores[4]
+        totais["E"] += saldo
 
     ultima_linha = primeira_linha + len(meses) - 1
     linha_total = ultima_linha + 1
-    ws.cell(row=linha_total, column=1, value="Total").font = Font(bold=True)
-    for col, letra in [(2, "B"), (3, "C"), (4, "D")]:
+    borda_total = Border(top=Side(style="medium", color=INK))
+    c = estilo(ws.cell(row=linha_total, column=2, value="Total"), negrito=True, recuo=1, linha=False)
+    c.border = borda_total
+    for col, letra in [(3, "C"), (4, "D"), (5, "E")]:
         cell = formula(ws, linha_total, col, f"=SUM({letra}{primeira_linha}:{letra}{ultima_linha})", totais[letra])
-        cell.font = Font(bold=True)
-        cell.number_format = CUR_FMT
-    for col in range(1, 6):
-        ws.cell(row=linha_total, column=col).border = Border(top=Side(style="thin", color=INK_MUTED))
+        estilo(cell, negrito=True, fmt=CUR_FMT, linha=False).border = borda_total
+    ws.cell(row=linha_total, column=6).border = borda_total
+    ws.row_dimensions[linha_total].height = 22
 
-    # cor condicional: saldo do mês negativo em vermelho, positivo em verde
-    faixa_saldo = f"D{primeira_linha}:D{ultima_linha}"
-    ws.conditional_formatting.add(
-        faixa_saldo, CellIsRule(operator="lessThan", formula=["0"], font=Font(color=CRITICAL)))
-    ws.conditional_formatting.add(
-        faixa_saldo, CellIsRule(operator="greaterThanOrEqual", formula=["0"], font=Font(color=SUCCESS_TEXT)))
+    cores_de_saldo(ws, f"E{primeira_linha}:E{ultima_linha}", negrito=True)
+    cores_de_saldo(ws, f"E{linha_total}", negrito=True)
+    larguras(ws, [14, 17, 17, 17, 20])
 
-    larguras = [12, 16, 16, 16, 18]
-    for j, w in enumerate(larguras, start=1):
-        ws.column_dimensions[get_column_letter(j)].width = w
+    # Gráficos logo abaixo da tabela, na largura dela (antes ficavam longe, à direita)
+    categorias = Reference(ws, min_col=2, min_row=primeira_linha, max_row=ultima_linha)
+    linha_graficos = linha_total + 3
+    secao(ws, linha_graficos - 1, "Entradas x saídas por mês", 2, 6)
 
-    # Gráfico 1: Entradas x Saídas por mês (barras, mesma escala -> mesmo eixo)
     chart1 = eixos_visiveis(BarChart())
     chart1.type = "col"
     chart1.grouping = "clustered"
-    chart1.title = "Entradas x Saídas por Mês"
+    chart1.title = None
     chart1.style = 10
-    chart1.y_axis.title = "R$"
+    chart1.y_axis.title = None
+    chart1.y_axis.numFmt = '"R$" #,##0'
     chart1.x_axis.title = None
     chart1.gapWidth = 60
-    dados = Reference(ws, min_col=2, max_col=3, min_row=4, max_row=ultima_linha)
-    categorias = Reference(ws, min_col=1, min_row=primeira_linha, max_row=ultima_linha)
+    dados = Reference(ws, min_col=3, max_col=4, min_row=4, max_row=ultima_linha)
     chart1.add_data(dados, titles_from_data=True)
     chart1.set_categories(categorias)
     chart1.series[0].graphicalProperties.solidFill = BLUE
     chart1.series[1].graphicalProperties.solidFill = RED
-    chart1.height = 8.5
-    chart1.width = 20
-    ws.add_chart(chart1, "G4")
+    chart1.legend.position = "b"
+    chart1.height = 8
+    chart1.width = 20.5
+    ws.add_chart(chart1, f"B{linha_graficos}")
 
-    # Gráfico 2: Saldo acumulado (série única -> sem legenda, linha)
+    linha_saldo = linha_graficos + 18
+    secao(ws, linha_saldo - 1, "Saldo acumulado", 2, 6)
     chart2 = eixos_visiveis(LineChart())
-    chart2.title = "Saldo Acumulado"
+    chart2.title = None
     chart2.style = 10
-    chart2.y_axis.title = "R$"
-    dados2 = Reference(ws, min_col=5, min_row=4, max_row=ultima_linha)
+    chart2.y_axis.title = None
+    chart2.y_axis.numFmt = '"R$" #,##0'
+    dados2 = Reference(ws, min_col=6, min_row=4, max_row=ultima_linha)
     chart2.add_data(dados2, titles_from_data=True)
     chart2.set_categories(categorias)
     s = chart2.series[0]
@@ -307,228 +353,226 @@ def montar_fluxo_mensal(wb, df, meses, ultima_linha_dados):
     s.marker.graphicalProperties.line.solidFill = BLUE
     s.smooth = False
     chart2.legend = None
-    chart2.height = 8.5
-    chart2.width = 20
-    ws.add_chart(chart2, "G21")
+    chart2.height = 8
+    chart2.width = 20.5
+    ws.add_chart(chart2, f"B{linha_saldo}")
 
     return ws, primeira_linha, ultima_linha, linha_total
 
 
-def montar_contas(wb, df, ultima_linha_dados):
+def montar_contas(wb, df, u):
     ws = wb.create_sheet("Contas a Pagar e Receber")
-    titulo_pagina(ws, "Contas a Pagar e Receber",
-                  "Transações com status Pendente ou Atrasado (em aberto)", 10)
+    titulo_pagina(ws, "Contas a pagar e receber",
+                  "Transações com status Pendente ou Atrasado — o que ainda vai entrar e sair do caixa")
 
-    ws.cell(row=4, column=2, value="Pendente")
-    ws.cell(row=4, column=3, value="Atrasado")
-    ws.cell(row=4, column=4, value="Total em Aberto")
-    header_row(ws, 4, 2, 4)
-
-    ws.cell(row=5, column=1, value="A Receber (Entradas)")
-    ws.cell(row=6, column=1, value="A Pagar (Saídas)")
+    # o resumo usa a mesma grade das listas abaixo: rótulo em B:C, números em D, E e F
+    header_row(ws, 4, ["Em aberto", "", "Pendente", "Atrasado", "Total"], numericas=(2, 3, 4))
+    ws.merge_cells("B4:C4")
+    tipo, valor, status = (faixa_dados(c, u) for c in ("tipo", "valor", "status"))
     em_aberto = {}
-    for r, tipo in [(5, "Entrada"), (6, "Saída")]:
+    for r, t, rotulo, cor in [(5, "Entrada", "A receber (entradas)", BLUE), (6, "Saída", "A pagar (saídas)", RED)]:
+        estilo(ws.cell(row=r, column=2, value=rotulo), negrito=True, recuo=1)
+        estilo(ws.cell(row=r, column=3))
+        ws.merge_cells(start_row=r, start_column=2, end_row=r, end_column=3)
         soma = 0.0
-        for c, status in [(2, "Pendente"), (3, "Atrasado")]:
-            valor = df.loc[(df["tipo"] == tipo) & (df["status"] == status), "valor"].sum()
-            soma += valor
-            formula(ws, r, c,
-                    f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"{tipo}",'
-                    f'Dados!$F$2:$F${ultima_linha_dados},"{status}")',
-                    valor).number_format = CUR_FMT
+        for c, st, cor_st in [(4, "Pendente", WARNING), (5, "Atrasado", CRITICAL)]:
+            v = df.loc[(df["tipo"] == t) & (df["status"] == st), "valor"].sum()
+            soma += v
+            estilo(formula(ws, r, c, f'=SUMIFS({valor},{tipo},"{t}",{status},"{st}")', v), fmt=CUR_FMT, cor=cor_st)
         em_aberto[r] = soma
-        formula(ws, r, 4, f"=B{r}+C{r}", soma).number_format = CUR_FMT
-        ws.cell(row=r, column=4).font = Font(bold=True)
+        estilo(formula(ws, r, 6, f"=D{r}+E{r}", soma), fmt=CUR_FMT, negrito=True, cor=cor)
+        ws.row_dimensions[r].height = 22
 
-    ws.cell(row=7, column=1, value="Saldo em Aberto (Receber − Pagar)").font = Font(bold=True)
-    saldo_cell = formula(ws, 7, 4, "=D5-D6", em_aberto[5] - em_aberto[6])
-    saldo_cell.font = Font(bold=True)
-    saldo_cell.number_format = CUR_FMT
-    ws.conditional_formatting.add(
-        "D7", CellIsRule(operator="lessThan", formula=["0"], font=Font(bold=True, color=CRITICAL)))
-    ws.conditional_formatting.add(
-        "D7", CellIsRule(operator="greaterThanOrEqual", formula=["0"], font=Font(bold=True, color=SUCCESS_TEXT)))
-
-    draw_box(ws, 4, 1, 7, 4)
+    borda_total = Border(top=Side(style="medium", color=INK))
+    c = estilo(ws.cell(row=7, column=2, value="Saldo em aberto (receber − pagar)"), negrito=True, recuo=1, linha=False)
+    c.border = borda_total
+    for col in (3, 4, 5):
+        ws.cell(row=7, column=col).border = borda_total
+    ws.merge_cells("B7:C7")
+    saldo_cell = formula(ws, 7, 6, "=F5-F6", em_aberto[5] - em_aberto[6])
+    estilo(saldo_cell, negrito=True, tam=11, fmt=CUR_FMT, linha=False).border = borda_total
+    cores_de_saldo(ws, "F7", negrito=True, tam=11)
+    ws.row_dimensions[7].height = 24
 
     receber = df[(df["tipo"] == "Entrada") & (df["status"].isin(["Pendente", "Atrasado"]))].sort_values("data")
     pagar = df[(df["tipo"] == "Saída") & (df["status"].isin(["Pendente", "Atrasado"]))].sort_values("data")
 
-    cor_por_status = {"Pendente": WARNING, "Atrasado": CRITICAL}
-
-    def escrever_detalhe(bloco_df, titulo, col_inicial):
-        linha_titulo = 10
-        linha_cabecalho = 11
-        ws.merge_cells(start_row=linha_titulo, start_column=col_inicial,
-                        end_row=linha_titulo, end_column=col_inicial + 4)
-        tcell = ws.cell(row=linha_titulo, column=col_inicial,
-                         value=f"{titulo} ({len(bloco_df)} transações)")
-        tcell.font = Font(bold=True, color=INK, size=11)
-
-        cabecalhos = ["Data", "Descrição", "Categoria", "Valor", "Status"]
-        for j, nome in enumerate(cabecalhos):
-            ws.cell(row=linha_cabecalho, column=col_inicial + j, value=nome)
-        header_row(ws, linha_cabecalho, col_inicial, col_inicial + 4, fill_color=INK_SEC)
-
+    def escrever_detalhe(bloco_df, titulo, linha_titulo, cor_valor):
+        secao(ws, linha_titulo, f"{titulo} ({len(bloco_df)})", 2, 6)
+        linha_cabecalho = linha_titulo + 1
+        header_row(ws, linha_cabecalho, ["Data", "Descrição", "Categoria", "Valor", "Status"], numericas=(3,), centro=(4,))
         for i, row in enumerate(bloco_df.itertuples(index=False), start=1):
             r = linha_cabecalho + i
-            ws.cell(row=r, column=col_inicial, value=row.data.to_pydatetime()).number_format = DATE_FMT
-            ws.cell(row=r, column=col_inicial + 1, value=row.descricao)
-            ws.cell(row=r, column=col_inicial + 2, value=row.categoria)
-            ws.cell(row=r, column=col_inicial + 3, value=float(row.valor)).number_format = CUR_FMT
-            status_cell = ws.cell(row=r, column=col_inicial + 4, value=row.status)
-            status_cell.font = Font(color=cor_por_status.get(row.status, INK), bold=True)
-
+            estilo(ws.cell(row=r, column=2, value=row.data.to_pydatetime()), fmt=DATE_FMT, cor=INK_SEC, recuo=1,
+                   alinhar="left")
+            texto(ws, r, 3, row.descricao, negrito=True, recuo=1)
+            texto(ws, r, 4, row.categoria, cor=INK_SEC, recuo=1)
+            estilo(ws.cell(row=r, column=5, value=float(row.valor)), fmt=CUR_FMT, cor=cor_valor)
+            texto(ws, r, 6, row.status, alinhar="center")
+            ws.row_dimensions[r].height = 18
         linha_final = linha_cabecalho + len(bloco_df)
-        col_letra_ini = get_column_letter(col_inicial)
-        col_letra_fim = get_column_letter(col_inicial + 4)
-        nome_tabela = "tbl_receber" if col_inicial == 1 else "tbl_pagar"
-        tabela_excel(ws, nome_tabela, f"{col_letra_ini}{linha_cabecalho}:{col_letra_fim}{linha_final}")
+        cores_de_status(ws, f"F{linha_cabecalho + 1}:F{linha_final}")
         return linha_final
 
-    escrever_detalhe(receber, "Contas a Receber em Aberto", 1)
-    escrever_detalhe(pagar, "Contas a Pagar em Aberto", 7)
+    # uma lista embaixo da outra: lado a lado, ficavam espremidas e cortadas
+    fim = escrever_detalhe(receber, "Contas a receber em aberto", 10, BLUE)
+    escrever_detalhe(pagar, "Contas a pagar em aberto", fim + 3, RED)
 
-    larguras = {1: 12, 2: 26, 3: 16, 4: 13, 5: 13, 7: 12, 8: 26, 9: 16, 10: 13, 11: 13}
-    for col, w in larguras.items():
-        ws.column_dimensions[get_column_letter(col)].width = w
-    ws.column_dimensions["F"].width = 3
-
+    larguras(ws, [14, 30, 20, 16, 16])
     return ws
 
 
-def montar_dre(wb, df, ultima_linha_dados):
+def montar_dre(wb, df, u):
     ws = wb.create_sheet("DRE")
-    titulo_pagina(ws, "DRE Simplificado",
-                  "Demonstrativo de Resultado — regime de competência (todas as transações lançadas, pagas ou não)", 5)
+    titulo_pagina(ws, "DRE simplificado",
+                  "Demonstrativo de resultado · regime de competência: todas as transações lançadas, pagas ou não")
 
-    ws.cell(row=4, column=1, value="Receita Bruta (Entradas)").font = Font(bold=True)
+    tipo, valor, categoria = (faixa_dados(c, u) for c in ("tipo", "valor", "categoria"))
     receita = df.loc[df["tipo"] == "Entrada", "valor"].sum()
-    receita_cell = formula(ws, 4, 2, f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Entrada")', receita)
-    receita_cell.font = Font(bold=True, color=BLUE)
-    receita_cell.number_format = CUR_FMT
+    estilo(ws.cell(row=4, column=2, value="Receita bruta (entradas)"), negrito=True, tam=11, recuo=1)
+    estilo(formula(ws, 4, 3, f'=SUMIFS({valor},{tipo},"Entrada")', receita), negrito=True, tam=11, fmt=CUR_FMT, cor=BLUE)
+    ws.row_dimensions[4].height = 24
 
-    ws.cell(row=5, column=1, value="Despesas Operacionais").font = Font(bold=True, color=INK_SEC)
+    estilo(ws.cell(row=5, column=2, value="Despesas operacionais"), negrito=True, cor=INK_SEC, recuo=1, linha=False)
+    ws.row_dimensions[5].height = 22
 
     primeira = 6
     total_despesas = 0.0
-    for i, categoria in enumerate(CATEGORIAS_DESPESA):
+    for i, cat in enumerate(CATEGORIAS_DESPESA):
         r = primeira + i
-        ws.cell(row=r, column=1, value=f"   {categoria}")
-        valor = df.loc[(df["tipo"] == "Saída") & (df["categoria"] == categoria), "valor"].sum()
-        total_despesas += valor
-        formula(ws, r, 2,
-                f'=SUMIFS(Dados!$E$2:$E${ultima_linha_dados},Dados!$D$2:$D${ultima_linha_dados},"Saída",'
-                f'Dados!$C$2:$C${ultima_linha_dados},"{categoria}")',
-                valor).number_format = CUR_FMT
+        # o rótulo fica sem espaços no início: o gráfico usa esta coluna como nome das barras
+        estilo(ws.cell(row=r, column=2, value=cat), cor=INK_SEC, recuo=3)
+        v = df.loc[(df["tipo"] == "Saída") & (df["categoria"] == cat), "valor"].sum()
+        total_despesas += v
+        estilo(formula(ws, r, 3, f'=SUMIFS({valor},{tipo},"Saída",{categoria},"{cat}")', v), fmt=CUR_FMT)
+        ws.row_dimensions[r].height = 19
     ultima = primeira + len(CATEGORIAS_DESPESA) - 1
 
     linha_total_desp = ultima + 1
-    ws.cell(row=linha_total_desp, column=1, value="Total de Despesas").font = Font(bold=True)
-    total_desp_cell = formula(ws, linha_total_desp, 2, f"=SUM(B{primeira}:B{ultima})", total_despesas)
-    total_desp_cell.font = Font(bold=True, color=RED)
-    total_desp_cell.number_format = CUR_FMT
-    for col in (1, 2):
-        ws.cell(row=linha_total_desp, column=col).border = Border(top=Side(style="thin", color=INK_MUTED))
+    estilo(ws.cell(row=linha_total_desp, column=2, value="Total de despesas"), negrito=True, recuo=1)
+    estilo(formula(ws, linha_total_desp, 3, f"=SUM(C{primeira}:C{ultima})", total_despesas),
+           negrito=True, fmt=CUR_FMT, cor=RED)
+    ws.row_dimensions[linha_total_desp].height = 22
 
     linha_resultado = linha_total_desp + 2
-    ws.cell(row=linha_resultado, column=1, value="Resultado Líquido").font = Font(bold=True, size=12)
+    borda_total = Border(top=Side(style="medium", color=INK))
+    c = estilo(ws.cell(row=linha_resultado, column=2, value="Resultado líquido"), negrito=True, tam=12, recuo=1, linha=False)
+    c.border = borda_total
     resultado = receita - total_despesas
-    resultado_cell = formula(ws, linha_resultado, 2, f"=B4-B{linha_total_desp}", resultado)
-    resultado_cell.font = Font(bold=True, size=12)
-    resultado_cell.number_format = CUR_FMT
-    ref = f"B{linha_resultado}"
-    ws.conditional_formatting.add(
-        ref, CellIsRule(operator="lessThan", formula=["0"], font=Font(bold=True, size=12, color=CRITICAL)))
-    ws.conditional_formatting.add(
-        ref, CellIsRule(operator="greaterThanOrEqual", formula=["0"], font=Font(bold=True, size=12, color=SUCCESS_TEXT)))
+    estilo(formula(ws, linha_resultado, 3, f"=C4-C{linha_total_desp}", resultado),
+           negrito=True, tam=12, fmt=CUR_FMT, linha=False).border = borda_total
+    cores_de_saldo(ws, f"C{linha_resultado}", negrito=True, tam=12)
+    ws.row_dimensions[linha_resultado].height = 26
 
     linha_margem = linha_resultado + 1
-    ws.cell(row=linha_margem, column=1, value="Margem Líquida").font = Font(italic=True, color=INK_SEC)
-    margem_cell = formula(ws, linha_margem, 2, f"=B{linha_resultado}/B4", resultado / receita if receita else 0.0)
-    margem_cell.number_format = PCT_FMT
-    margem_cell.font = Font(italic=True, color=INK_SEC)
+    estilo(ws.cell(row=linha_margem, column=2, value="Margem líquida"), italico=True, cor=INK_SEC, recuo=1, linha=False)
+    estilo(formula(ws, linha_margem, 3, f"=C{linha_resultado}/C4", resultado / receita if receita else 0.0),
+           italico=True, cor=INK_SEC, fmt=PCT_FMT, linha=False)
 
-    ws.column_dimensions["A"].width = 26
-    ws.column_dimensions["B"].width = 18
+    larguras(ws, [30, 18, 3])
 
     chart = eixos_visiveis(BarChart())
     chart.type = "bar"
-    chart.title = "Despesas por Categoria"
+    chart.title = None
     chart.style = 10
     chart.legend = None
     chart.x_axis.title = None
-    chart.y_axis.title = "R$"
-    dados = Reference(ws, min_col=2, min_row=primeira, max_row=ultima)
-    categorias = Reference(ws, min_col=1, min_row=primeira, max_row=ultima)
+    chart.y_axis.title = None
+    chart.y_axis.numFmt = '"R$" #,##0'
+    dados = Reference(ws, min_col=3, min_row=primeira, max_row=ultima)
+    categorias = Reference(ws, min_col=2, min_row=primeira, max_row=ultima)
     chart.add_data(dados, titles_from_data=False)
     chart.set_categories(categorias)
     chart.series[0].graphicalProperties.solidFill = RED
-    chart.height = 9
-    chart.width = 18
-    ws.add_chart(chart, "D4")
+    chart.height = 8
+    chart.width = 16
+    secao(ws, 4, "Despesas por categoria", 5, 11)
+    ws.add_chart(chart, "E5")
 
     return ws, linha_resultado
 
 
-def montar_resumo(wb, meses, linha_total_fluxo, linha_resultado_dre):
+def montar_resumo(wb, meses, linha_total_fluxo, linha_resultado_dre, n_transacoes):
     ws = wb.create_sheet("Resumo", 0)
-    titulo_pagina(ws, "Dashboard Financeiro — PME",
-                  f"Período: {meses[0].strftime('%b/%Y')} a {meses[-1].strftime('%b/%Y')} "
-                  "· dados tratados a partir de um export bruto simulado (ver README)", 9)
+    titulo_pagina(ws, "Dashboard financeiro — PME",
+                  f"{mes_pt(meses[0])} a {mes_pt(meses[-1])} · {n_transacoes} transações tratadas "
+                  "a partir de um export bruto simulado (ver README)")
 
-    def tile(row_label, row_value, col1, col2, titulo, aba, celula, cor_valor, fmt=CUR_FMT):
-        ws.merge_cells(start_row=row_label, start_column=col1, end_row=row_label, end_column=col2)
-        lbl = ws.cell(row=row_label, column=col1, value=titulo)
-        lbl.font = Font(size=9, color=INK_SEC)
-        ws.merge_cells(start_row=row_value, start_column=col1, end_row=row_value, end_column=col2)
+    def tile(r, col, titulo, nota, aba, celula, cor_valor):
+        """Cartão de indicador: rótulo, valor e uma nota, numa caixa de 2 colunas."""
+        fundo = PatternFill(start_color=SURFACE_2, end_color=SURFACE_2, fill_type="solid")
+        for rr in (r, r + 1, r + 2):
+            ws.merge_cells(start_row=rr, start_column=col, end_row=rr, end_column=col + 1)
+            for cc in (col, col + 1):
+                ws.cell(row=rr, column=cc).fill = fundo
+        lbl = ws.cell(row=r, column=col, value=titulo)
+        lbl.font = Font(name=FONTE, size=9, bold=True, color=INK_SEC)
+        lbl.alignment = Alignment(horizontal="left", indent=1, vertical="bottom")
         ref = f"'{aba}'!{celula}" if " " in aba else f"{aba}!{celula}"
-        val = formula(ws, row_value, col1, "=" + ref, RESULTADOS[(aba, celula)])
-        val.font = Font(size=18, bold=True, color=cor_valor)
-        val.number_format = fmt
-        fill_block(ws, row_label, col1, row_value, col2, SURFACE)
-        draw_box(ws, row_label, col1, row_value, col2)
-        ws.row_dimensions[row_label].height = 16
-        ws.row_dimensions[row_value].height = 28
+        val = formula(ws, r + 1, col, "=" + ref, RESULTADOS[(aba, celula)])
+        val.font = Font(name=FONTE, size=17, bold=True, color=cor_valor)
+        val.number_format = CUR_FMT
+        val.alignment = Alignment(horizontal="left", indent=1, vertical="center")
+        n = ws.cell(row=r + 2, column=col, value=nota)
+        n.font = Font(name=FONTE, size=9, color=INK_MUTED)
+        n.alignment = Alignment(horizontal="left", indent=1, vertical="top")
 
-    tile(4, 5, 1, 3, "RECEBIDO (CAIXA)", "Fluxo Mensal", f"B{linha_total_fluxo}", BLUE)
-    tile(4, 5, 4, 6, "PAGO (CAIXA)", "Fluxo Mensal", f"C{linha_total_fluxo}", RED)
-    tile(4, 5, 7, 9, "SALDO DE CAIXA", "Fluxo Mensal", f"D{linha_total_fluxo}", INK)
+    for r, h in ((4, 20), (5, 30), (6, 18), (8, 20), (9, 30), (10, 18)):
+        ws.row_dimensions[r].height = h
+    ws.row_dimensions[7].height = 10
 
-    tile(7, 8, 1, 3, "CONTAS A RECEBER (EM ABERTO)", "Contas a Pagar e Receber", "D5", BLUE)
-    tile(7, 8, 4, 6, "CONTAS A PAGAR (EM ABERTO)", "Contas a Pagar e Receber", "D6", RED)
-    tile(7, 8, 7, 9, "RESULTADO LÍQUIDO (DRE)", "DRE", f"B{linha_resultado_dre}", INK)
+    tile(4, 2, "RECEBIDO", "entrou no caixa (pago)", "Fluxo Mensal", f"C{linha_total_fluxo}", BLUE)
+    tile(4, 5, "PAGO", "saiu do caixa (pago)", "Fluxo Mensal", f"D{linha_total_fluxo}", RED)
+    tile(4, 8, "SALDO DE CAIXA", "recebido − pago", "Fluxo Mensal", f"E{linha_total_fluxo}", INK)
+    tile(8, 2, "A RECEBER", "pendente ou atrasado", "Contas a Pagar e Receber", "F5", BLUE)
+    tile(8, 5, "A PAGAR", "pendente ou atrasado", "Contas a Pagar e Receber", "F6", RED)
+    tile(8, 8, "RESULTADO LÍQUIDO", "receita − despesas (DRE)", "DRE", f"C{linha_resultado_dre}", INK)
 
-    ws.cell(row=10, column=1, value="Fluxo de caixa mensal").font = Font(bold=True, size=11, color=INK)
-
+    secao(ws, 12, "Fluxo de caixa mensal", 2, 9)
     chart = eixos_visiveis(BarChart())
     chart.type = "col"
     chart.grouping = "clustered"
     chart.title = None
     chart.style = 10
-    chart.y_axis.title = "R$"
+    chart.y_axis.title = None
+    chart.y_axis.numFmt = '"R$" #,##0'
     fluxo_ws = wb["Fluxo Mensal"]
     primeira_linha_fluxo = linha_total_fluxo - len(meses)
     ultima_linha_fluxo = linha_total_fluxo - 1
-    dados = Reference(fluxo_ws, min_col=2, max_col=3, min_row=4, max_row=ultima_linha_fluxo)
-    categorias = Reference(fluxo_ws, min_col=1, min_row=primeira_linha_fluxo, max_row=ultima_linha_fluxo)
+    dados = Reference(fluxo_ws, min_col=3, max_col=4, min_row=4, max_row=ultima_linha_fluxo)
+    categorias = Reference(fluxo_ws, min_col=2, min_row=primeira_linha_fluxo, max_row=ultima_linha_fluxo)
     chart.add_data(dados, titles_from_data=True)
     chart.set_categories(categorias)
     chart.series[0].graphicalProperties.solidFill = BLUE
     chart.series[1].graphicalProperties.solidFill = RED
-    chart.height = 9
-    chart.width = 24
-    ws.add_chart(chart, "A11")
+    chart.legend.position = "b"
+    chart.height = 8
+    chart.width = 22
+    ws.add_chart(chart, "B14")
 
-    for col in range(1, 10):
-        ws.column_dimensions[get_column_letter(col)].width = 13
+    secao(ws, 31, "Abas desta planilha", 2, 9)
+    guia = [
+        ("Fluxo Mensal", "entradas e saídas pagas mês a mês, saldo do mês e acumulado"),
+        ("Contas a Pagar e Receber", "o que está pendente ou atrasado, com a lista de cada lado"),
+        ("DRE", "receita, despesas por categoria e resultado líquido"),
+        ("Dados", "as transações tratadas — base de todas as fórmulas; edite e os totais recalculam"),
+    ]
+    for i, (nome, desc) in enumerate(guia):
+        r = 32 + i
+        ws.merge_cells(start_row=r, start_column=2, end_row=r, end_column=4)
+        ws.merge_cells(start_row=r, start_column=5, end_row=r, end_column=9)
+        estilo(ws.cell(row=r, column=2, value=nome), negrito=True, recuo=1)
+        estilo(ws.cell(row=r, column=5, value=desc), cor=INK_SEC, recuo=1)
+        for col in range(3, 10):
+            if col != 5:
+                ws.cell(row=r, column=col).border = Border(bottom=THIN)
+        ws.row_dimensions[r].height = 20
 
-    nota = ws.cell(row=28, column=1,
-                    value="Dados tratados a partir de um export financeiro simulado com sujeira "
-                          "proposital (categorias, datas, sinais e status) — ver README do projeto "
-                          "para o pipeline completo de tratamento e o relatório de qualidade de dados.")
-    nota.font = Font(size=8, italic=True, color=INK_MUTED)
-    ws.merge_cells(start_row=28, start_column=1, end_row=28, end_column=9)
+    larguras(ws, [15, 15, 2, 15, 15, 2, 15, 15])
+    nota = ws.cell(row=37, column=2,
+                   value="Dados simulados com sujeira proposital (categorias, datas, sinais e status) — "
+                         "o README do projeto mostra o tratamento e o relatório de qualidade de dados.")
+    nota.font = Font(name=FONTE, size=8, italic=True, color=INK_MUTED)
 
 
 def salvar_deterministico(wb, caminho):
@@ -579,16 +623,12 @@ def main():
     wb = Workbook()
     wb.remove(wb.active)  # remove a aba "Sheet" padrão
 
-    _, n_linhas = montar_dados(wb, df)
-    ultima_linha_dados = n_linhas + 1
+    _, ultima_linha_dados = montar_dados(wb, df)
+    n_linhas = len(df)
     _, primeira_linha, ultima_linha, linha_total_fluxo = montar_fluxo_mensal(wb, df, meses, ultima_linha_dados)
     montar_contas(wb, df, ultima_linha_dados)
     _, linha_resultado_dre = montar_dre(wb, df, ultima_linha_dados)
-    montar_resumo(wb, meses, linha_total_fluxo, linha_resultado_dre)
-
-    wb["Resumo"].sheet_view.showGridLines = False
-    for nome in ["Fluxo Mensal", "Contas a Pagar e Receber", "DRE"]:
-        wb[nome].sheet_view.showGridLines = False
+    montar_resumo(wb, meses, linha_total_fluxo, linha_resultado_dre, n_linhas)
 
     # Impressão: cada aba cabe na largura de uma folha A4 deitada (sem isso,
     # tabelas e gráficos saíam cortados entre páginas).
@@ -598,7 +638,6 @@ def main():
         ws.sheet_properties.pageSetUpPr.fitToPage = True
         ws.page_setup.fitToWidth = 1
         ws.page_setup.fitToHeight = 0
-    wb["Dados"].print_title_rows = "1:1"
 
     wb.active = 0
     preencher_caches(wb)

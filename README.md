@@ -134,7 +134,8 @@ pro dono do negócio: o DRE diz se a empresa **deu lucro** no período; o
 fluxo de caixa diz quanto dinheiro **de fato entrou e saiu**. Com os dados
 simulados, a empresa teve R$ 61.964 de resultado, mas só R$ 21.337 de
 saldo de caixa — o resto está pendente ou atrasado com clientes.
-- **Dados** — a base tratada completa, como Tabela do Excel (filtro embutido).
+- **Dados** — a base tratada completa, com filtro no cabeçalho e o status
+  de cada transação como etiqueta colorida.
 
 **Os totais e KPIs são fórmulas do Excel (`SUMIFS`), não valores fixos** —
 apontam para a aba Dados, então editar uma transação ali recalcula o resto
@@ -144,10 +145,13 @@ roda; para atualizá-las depois de mudar os dados, é só rodar
 `gerar_dashboard.py` de novo — mesma lógica de reprodutibilidade dos outros
 dois scripts do pipeline.
 
-Paleta e critérios de cor seguem uma referência de data-viz: azul para
-entradas, vermelho para saídas/despesas, e uma paleta de status reservada
-(amarelo = pendente, vermelho = atrasado, verde = positivo) nunca reutilizada
-para outra coisa. Os dois gráficos que comparam entradas/saídas com o saldo
+Visual igual ao do painel publicado: mesma paleta, uma fonte só em toda
+a planilha, cada aba com título e uma linha dizendo o que é, e um guia das
+abas no Resumo. Cores: azul para entradas, vermelho para saídas/despesas, e
+uma paleta de status reservada (âmbar = pendente, vermelho = atrasado,
+verde = pago/positivo) nunca reutilizada para outra coisa — o status
+aparece como etiqueta colorida por formatação condicional, então a cor
+acompanha se alguém editar o valor. Os dois gráficos que comparam entradas/saídas com o saldo
 acumulado ficam em eixos separados (grandezas muito diferentes) em vez de um
 gráfico de eixo duplo.
 
@@ -262,6 +266,16 @@ Vale registrar porque são evidência de depuração real, não só "rodou sem e
    o LibreOffice recalculando a planilha do zero: nenhuma diferença. E se
    alguma fórmula ficar sem resultado, a geração falha em vez de publicar
    uma planilha vazia.
+10. **Planilha com cara de rascunho.** Revendo a planilha com o mesmo
+    critério visual da página: fontes misturadas (toda célula formatada
+    só como "negrito" ficava sem nome de fonte, e cada programa usava a
+    sua — no LibreOffice, uma serifada), a aba Dados sem título, textos
+    cortados ("A Receber (Ent"), as duas listas de contas espremidas lado
+    a lado, gráficos longe das tabelas, o "pendente" em amarelo claro quase
+    ilegível no branco e o período escrito com mês em inglês ("Sep/2026").
+    Refeita com a identidade do painel — e sem mexer nas contas: as mesmas
+    54 fórmulas, conferidas de novo contra o LibreOffice recalculando do
+    zero (nenhuma diferença), e os mesmos totais de antes.
 
 ## Stack
 
